@@ -1259,7 +1259,6 @@
         
         try {
           addLog('Sending request to Google Apps Script...', 'info');
-          addLog('URL: ' + GOOGLE_SCRIPT_URL, 'info');
           
           const payload = {
             action: 'submitParcel',
@@ -1267,25 +1266,47 @@
             photoBase64: capturedPhotoData
           };
           
-          addLog('Payload: ' + JSON.stringify({
-            action: payload.action,
-            trackingNumber: payload.trackingNumber,
-            photoBase64: payload.photoBase64.substring(0, 50) + '...'
-          }), 'info');
-          
+          // Use text/plain bypass for Apps Script CORS
           const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors',
             headers: {
-              'Content-Type': 'application/json',
+              'Content-Type': 'text/plain;charset=utf-8',
             },
             body: JSON.stringify(payload)
           });
           
-          addLog('Request sent successfully (no-cors mode - no response body)', 'info');
-          addLog('=== SUBMISSION COMPLETE ===', 'info');
+          addLog('Response received!', 'info');
           
-          showSummary(input.value.trim(), 'Processing...', 'Saving...');
+          const result = await response.json();
+          addLog('Response parsed successfully', 'info');
+          addLog('Success: ' + result.success, result.success ? 'info' : 'error');
+          
+          // Display backend logs
+          if (result.logs && result.logs.length > 0) {
+            addLog('=== BACKEND LOGS ===', 'warning');
+            result.logs.forEach(log => {
+              addLog('[BACKEND] ' + log, 'info');
+            });
+            addLog('=== END BACKEND LOGS ===', 'warning');
+          }
+          
+          if (result.success) {
+            addLog('=== SUBMISSION COMPLETE ===', 'info');
+            // Hide the submit/retake buttons immediately to prevent UI overlap
+            submitButton.style.display = 'none';
+            retakeButton.style.display = 'none';
+            
+            showSummary(
+              result.data.trackingNumber,
+              result.data.weight || 'N/A',
+              result.data.driveLink || 'Link not returned'
+            );
+          } else {
+            addLog('Submission failed: ' + result.message, 'error');
+            alert('Error: ' + result.message);
+            submitButton.disabled = false;
+            submitButton.textContent = '✅ Submit Parcel';
+          }
           
         } catch (error) {
           console.error('Submit error:', error);
