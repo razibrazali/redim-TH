@@ -682,17 +682,9 @@
             ]
           };
           
-          // Camera constraints with autofocus
+          // Simple camera constraint (html5-qrcode expects simple object)
           const cameraConstraints = {
-            facingMode: "environment",
-            advanced: [
-              {
-                focusMode: "continuous",
-                focusDistance: 0,
-                whiteBalanceMode: "continuous",
-                exposureMode: "continuous"
-              }
-            ]
+            facingMode: "environment"
           };
           
           await html5QrCode.start(
@@ -704,23 +696,26 @@
           
           isScanning = true;
           
-          // Try to apply autofocus to video track
-          try {
-            const videoElement = document.querySelector('#reader video');
-            if (videoElement && videoElement.srcObject) {
-              const videoTrack = videoElement.srcObject.getVideoTracks()[0];
-              if (videoTrack) {
-                const capabilities = videoTrack.getCapabilities();
-                if (capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
-                  await videoTrack.applyConstraints({
-                    advanced: [{ focusMode: 'continuous' }]
-                  });
+          // Try to apply autofocus after camera starts
+          setTimeout(async () => {
+            try {
+              const videoElement = document.querySelector('#reader video');
+              if (videoElement && videoElement.srcObject) {
+                const videoTrack = videoElement.srcObject.getVideoTracks()[0];
+                if (videoTrack && videoTrack.getCapabilities) {
+                  const capabilities = videoTrack.getCapabilities();
+                  if (capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
+                    await videoTrack.applyConstraints({
+                      advanced: [{ focusMode: 'continuous' }]
+                    });
+                    console.log('Autofocus applied');
+                  }
                 }
               }
+            } catch (focusError) {
+              console.log('Autofocus not supported:', focusError);
             }
-          } catch (focusError) {
-            console.log('Autofocus not supported:', focusError);
-          }
+          }, 1000);
           
         } catch (error) {
           console.error('Camera error:', error);
