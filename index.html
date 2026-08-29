@@ -377,6 +377,51 @@
       
       let html5QrCode = null;
       let isScanning = false;
+      let lastScannedValue = '';
+      let lastScanTime = 0;
+      
+      // Create audio context for beep sound
+      let audioContext = null;
+      
+      function playBeepSound() {
+        try {
+          // Create audio context if not exists
+          if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          }
+          
+          // Resume context if suspended (mobile browsers)
+          if (audioContext.state === 'suspended') {
+            audioContext.resume();
+          }
+          
+          // Create oscillator for beep
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          // Connect oscillator to gain node and gain node to speakers
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          // Set beep frequency (like supermarket scanner)
+          oscillator.frequency.value = 2000; // High-pitched beep
+          oscillator.type = 'square'; // Sharp sound
+          
+          // Set volume
+          gainNode.gain.value = 0.3;
+          
+          // Play beep
+          oscillator.start();
+          
+          // Stop after 100ms
+          setTimeout(function() {
+            oscillator.stop();
+          }, 100);
+          
+        } catch (e) {
+          console.log('Audio not available:', e);
+        }
+      }
       
       // Auto-focus on load
       input.focus();
@@ -384,7 +429,17 @@
       // Handle Enter key press (for USB scanners)
       input.addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && this.value.trim() !== '') {
-          // USB scanner detected - just mark as filled
+          // Check for duplicate scan (some scanners send Enter twice)
+          const now = Date.now();
+          if (this.value.trim() === lastScannedValue && now - lastScanTime < 500) {
+            return; // Ignore duplicate
+          }
+          
+          lastScannedValue = this.value.trim();
+          lastScanTime = now;
+          
+          // USB scanner detected - play beep and mark as filled
+          playBeepSound();
           markAsFilled();
         }
       });
@@ -393,6 +448,7 @@
       input.addEventListener('paste', function(e) {
         setTimeout(function() {
           if (input.value.trim() !== '') {
+            playBeepSound();
             markAsFilled();
           }
         }, 100);
@@ -513,6 +569,9 @@
       function onScanSuccess(decodedText, decodedResult) {
         stopScanner();
         
+        // Play beep sound
+        playBeepSound();
+        
         // Fill the input with scanned value
         input.value = decodedText;
         markAsFilled();
@@ -564,6 +623,9 @@
               .then(decodedText => {
                 tempScanner.clear();
                 tempContainer.remove();
+                
+                // Play beep sound
+                playBeepSound();
                 
                 input.value = decodedText;
                 markAsFilled();
