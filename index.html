@@ -357,10 +357,16 @@
         overflow: hidden;
       }
       
-      #cameraVideo {
+      #reader {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        position: relative;
+      }
+      
+      #reader video {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
       }
       
       .camera-guide {
@@ -383,6 +389,30 @@
         }
         50% {
           border-color: #34d399;
+        }
+      }
+      
+      .focus-hint {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        font-size: 14px;
+        font-weight: 500;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 8px 16px;
+        border-radius: 20px;
+        pointer-events: none;
+        animation: fadeInOut 2s infinite;
+      }
+      
+      @keyframes fadeInOut {
+        0%, 100% {
+          opacity: 0.7;
+        }
+        50% {
+          opacity: 1;
         }
       }
       
@@ -431,7 +461,7 @@
     <div class="container">
       <div class="header">
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner</h1>
+        <h1>Parcel Scanner 6:17</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill"></div>
@@ -487,9 +517,10 @@
       <div class="camera-header">
         📷 Point camera at barcode or QR code
       </div>
-      <div class="camera-body">
-        <video id="cameraVideo" autoplay playsinline></video>
+      <div class="camera-body" id="cameraBody">
+        <div id="reader"></div>
         <div class="camera-guide"></div>
+        <div class="focus-hint">👆 Tap screen to focus</div>
       </div>
       <div class="camera-footer">
         <button class="camera-cancel" onclick="stopScanner()">
@@ -498,7 +529,7 @@
       </div>
     </div>
 
-    <!-- html5-qrcode library for decoding -->
+    <!-- html5-qrcode library -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     
     <script>
@@ -507,13 +538,12 @@
       const cameraOverlay = document.getElementById('cameraOverlay');
       const scannerStatus = document.getElementById('scannerStatus');
       const clearButton = document.getElementById('clearButton');
-      const cameraVideo = document.getElementById('cameraVideo');
+      const cameraBody = document.getElementById('cameraBody');
       
-      let stream = null;
+      let html5QrCode = null;
       let isScanning = false;
       let lastScannedValue = '';
       let lastScanTime = 0;
-      let scanInterval = null;
       
       // Create audio context for beep sound
       let audioContext = null;
@@ -647,7 +677,7 @@
         statusMessage.style.display = 'none';
       }
       
-      // Full-screen camera scanner with direct getUserMedia
+      // Full-screen camera scanner
       async function startScanner() {
         if (isScanning) {
           await stopScanner();
@@ -658,62 +688,34 @@
           // Show full-screen overlay
           cameraOverlay.classList.add('active');
           
-          // Request camera with autofocus
-          const constraints = {
-            video: {
-              facingMode: { ideal: 'environment' },
-              width: { ideal: 1920 },
-              height: { ideal: 1080 }
-            }
+          // Create scanner instance
+          html5QrCode = new Html5Qrcode("reader");
+          
+          const config = {
+            fps: 15,
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0,
+            formatsToSupport: [
+              Html5QrcodeSupportedFormats.QR_CODE,
+              Html5QrcodeSupportedFormats.EAN_13,
+              Html5QrcodeSupportedFormats.EAN_8,
+              Html5QrcodeSupportedFormats.CODE_128,
+              Html5QrcodeSupportedFormats.CODE_39,
+              Html5QrcodeSupportedFormats.UPC_A,
+              Html5QrcodeSupportedFormats.UPC_E,
+              Html5QrcodeSupportedFormats.CODABAR,
+              Html5QrcodeSupportedFormats.ITF
+            ]
           };
           
-          stream = await navigator.mediaDevices.getUserMedia(constraints);
-          cameraVideo.srcObject = stream;
-          await cameraVideo.play();
+          await html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            onScanSuccess,
+            onScanFailure
+          );
           
           isScanning = true;
-          
-          // Apply autofocus if available
-          try {
-            const videoTrack = stream.getVideoTracks()[0];
-            const capabilities = videoTrack.getCapabilities();
-            
-            if (capabilities.focusMode) {
-              const focusModes = capabilities.focusMode;
-              
-              // Try continuous autofocus first
-              if (focusModes.includes('continuous')) {
-                await videoTrack.applyConstraints({
-                  advanced: [{ focusMode: 'continuous' }]
-                });
-                console.log('Continuous autofocus applied');
-              } else if (focusModes.includes('auto')) {
-                await videoTrack.applyConstraints({
-                  advanced: [{ focusMode: 'auto' }]
-                });
-                console.log('Auto focus applied');
-              }
-            }
-            
-            // Also set white balance and exposure if available
-            if (capabilities.whiteBalanceMode && capabilities.whiteBalanceMode.includes('continuous')) {
-              await videoTrack.applyConstraints({
-                advanced: [{ whiteBalanceMode: 'continuous' }]
-              });
-            }
-            
-            if (capabilities.exposureMode && capabilities.exposureMode.includes('continuous')) {
-              await videoTrack.applyConstraints({
-                advanced: [{ exposureMode: 'continuous' }]
-              });
-            }
-            
-          } catch (focusError) {
-            console.log('Advanced camera controls not supported:', focusError);
-          }
-          
-          // Start barcode detection loop
-          startBarcodeDetection();
           
         } catch (error) {
           console.error('Camera error:', error);
@@ -736,40 +738,6 @@
         }
       }
       
-      function startBarcodeDetection() {
-        // Use html5-qrcode to decode from video stream
-        const html5QrCode = new Html5Qrcode("cameraVideo");
-        
-        const config = {
-          fps: 15,
-          qrbox: { width: 250, height: 250 },
-          aspectRatio: 1.0,
-          formatsToSupport: [
-            Html5QrcodeSupportedFormats.QR_CODE,
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.EAN_8,
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.CODE_39,
-            Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.UPC_E,
-            Html5QrcodeSupportedFormats.CODABAR,
-            Html5QrcodeSupportedFormats.ITF
-          ]
-        };
-        
-        html5QrCode.start(
-          { deviceId: { exact: stream.getVideoTracks()[0].getSettings().deviceId } },
-          config,
-          onScanSuccess,
-          onScanFailure
-        ).then(() => {
-          // Store scanner instance for cleanup
-          window.activeScanner = html5QrCode;
-        }).catch(err => {
-          console.log('Scanner start error:', err);
-        });
-      }
-      
       function onScanSuccess(decodedText, decodedResult) {
         stopScanner();
         
@@ -790,26 +758,62 @@
       }
       
       async function stopScanner() {
-        // Stop html5-qrcode scanner if active
-        if (window.activeScanner) {
+        if (html5QrCode && isScanning) {
           try {
-            await window.activeScanner.stop();
-            await window.activeScanner.clear();
+            await html5QrCode.stop();
+            await html5QrCode.clear();
           } catch (e) {
             console.log('Error stopping scanner:', e);
           }
-          window.activeScanner = null;
+          html5QrCode = null;
+          isScanning = false;
         }
-        
-        // Stop camera stream
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-          stream = null;
-        }
-        
-        isScanning = false;
         cameraOverlay.classList.remove('active');
         input.focus();
+      }
+      
+      // Manual focus trigger - tap on screen to focus
+      cameraBody.addEventListener('click', async function() {
+        try {
+          const videoElement = document.querySelector('#reader video');
+          if (videoElement && videoElement.srcObject) {
+            const videoTrack = videoElement.srcObject.getVideoTracks()[0];
+            if (videoTrack && videoTrack.getCapabilities) {
+              const capabilities = videoTrack.getCapabilities();
+              
+              if (capabilities.focusMode) {
+                const focusModes = capabilities.focusMode;
+                
+                // Try continuous autofocus first
+                if (focusModes.includes('continuous')) {
+                  await videoTrack.applyConstraints({
+                    advanced: [{ focusMode: 'continuous' }]
+                  });
+                } else if (focusModes.includes('auto')) {
+                  await videoTrack.applyConstraints({
+                    advanced: [{ focusMode: 'auto' }]
+                  });
+                }
+                
+                // Visual feedback
+                showFocusFeedback();
+              }
+            }
+          }
+        } catch (error) {
+          console.log('Manual focus not supported:', error);
+        }
+      });
+      
+      function showFocusFeedback() {
+        // Flash the guide box
+        const guide = document.querySelector('.camera-guide');
+        guide.style.borderColor = '#ffffff';
+        guide.style.transition = 'border-color 0.3s';
+        
+        setTimeout(() => {
+          guide.style.borderColor = '#10b981';
+        }, 300);
       }
       
       // Scan from file
