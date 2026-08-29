@@ -6,6 +6,26 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Parcel Scanner</title>
     <style>
+      :root {
+        --primary: #2563eb;
+        --primary-dark: #1e40af;
+        --primary-light: #dbeafe;
+        --success: #10b981;
+        --success-light: #d1fae5;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+      }
+      
       * {
         margin: 0;
         padding: 0;
@@ -28,38 +48,104 @@
       
       .container {
         background: white;
-        border-radius: 24px;
-        padding: 24px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        border-radius: 20px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         width: 100%;
-        max-width: 600px;
+        max-width: 500px;
         margin: auto;
+        overflow: hidden;
       }
       
-      h1 {
-        color: #333;
-        margin: 0 0 8px 0;
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 24px 24px 20px;
         text-align: center;
-        font-size: clamp(24px, 6vw, 32px);
+        position: relative;
       }
       
-      .subtitle {
-        text-align: center;
-        color: #666;
-        font-size: clamp(14px, 3.5vw, 16px);
-        margin-bottom: 24px;
+      .header-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        font-size: 30px;
+        backdrop-filter: blur(10px);
+      }
+      
+      .header h1 {
+        color: white;
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      
+      .header p {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 14px;
+      }
+      
+      .progress-bar {
+        height: 4px;
+        background: rgba(255, 255, 255, 0.2);
+        margin-top: 16px;
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      
+      .progress-fill {
+        height: 100%;
+        background: white;
+        width: 33.33%;
+        border-radius: 2px;
+        transition: width 0.3s ease;
+      }
+      
+      .content {
+        padding: 24px;
+      }
+      
+      .step-indicator {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      
+      .step-number {
+        width: 32px;
+        height: 32px;
+        background: var(--primary);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+        margin-right: 12px;
+      }
+      
+      .step-text {
+        font-weight: 600;
+        color: var(--gray-800);
+        font-size: 16px;
       }
       
       .form-group {
-        margin: 20px 0;
+        margin-bottom: 20px;
       }
       
       .form-label {
         display: block;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 10px;
-        font-size: clamp(16px, 4vw, 18px);
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 8px;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
       
       .scanner-box {
@@ -68,100 +154,126 @@
       
       .scanner-box input {
         width: 100%;
-        padding: 20px 60px 20px 20px;
-        font-size: clamp(16px, 4vw, 20px);
-        border: 3px solid #667eea;
-        border-radius: 16px;
+        padding: 16px 50px 16px 16px;
+        font-size: 16px;
+        border: 2px solid var(--gray-300);
+        border-radius: 12px;
         outline: none;
         transition: all 0.3s;
         box-sizing: border-box;
         -webkit-appearance: none;
         appearance: none;
         font-weight: 500;
+        background: var(--gray-50);
       }
       
       .scanner-box input:focus {
-        border-color: #764ba2;
-        box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.15);
+        border-color: var(--primary);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
       }
       
       .scanner-box input::placeholder {
-        color: #999;
+        color: var(--gray-400);
         font-weight: normal;
       }
       
       .scanner-box input.filled {
-        border-color: #28a745;
-        background: #f0fff4;
+        border-color: var(--success);
+        background: var(--success-light);
       }
       
-      .barcode-icon {
+      .scanner-status {
         position: absolute;
-        right: 20px;
+        right: 16px;
         top: 50%;
         transform: translateY(-50%);
-        font-size: clamp(24px, 6vw, 32px);
+        font-size: 20px;
         pointer-events: none;
       }
       
-      .button-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin: 16px 0;
+      .scanner-status.success {
+        color: var(--success);
       }
       
-      .scan-button {
-        flex: 1;
-        min-width: 100px;
-        padding: 16px;
-        font-size: clamp(14px, 3.5vw, 16px);
-        font-weight: bold;
+      .button-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      
+      .button-full {
+        grid-column: 1 / -1;
+      }
+      
+      .action-button {
+        padding: 14px;
+        font-size: 14px;
+        font-weight: 600;
         border: none;
-        border-radius: 14px;
+        border-radius: 12px;
         cursor: pointer;
-        transition: all 0.3s;
+        transition: all 0.2s;
         touch-action: manipulation;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 48px;
       }
       
-      .scan-button:active {
-        transform: scale(0.95);
+      .action-button:active {
+        transform: scale(0.97);
       }
       
-      .camera-button {
-        background: #667eea;
+      .action-button.primary {
+        background: var(--primary);
         color: white;
       }
       
-      .camera-button:active {
-        background: #5568d3;
+      .action-button.primary:hover {
+        background: var(--primary-dark);
       }
       
-      .photo-button {
-        background: #6c757d;
+      .action-button.secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+      }
+      
+      .action-button.secondary:hover {
+        background: var(--gray-200);
+      }
+      
+      .action-button.success {
+        background: var(--success);
         color: white;
       }
       
-      .photo-button:active {
-        background: #5a6268;
+      .action-button.success:hover {
+        background: #059669;
       }
       
-      .clear-button {
-        background: #ffc107;
-        color: #333;
+      .action-button.danger {
+        background: var(--danger);
+        color: white;
       }
       
-      .clear-button:active {
-        background: #e0a800;
+      .action-button.danger:hover {
+        background: #dc2626;
+      }
+      
+      .action-button .icon {
+        font-size: 20px;
       }
       
       .status-message {
         margin-top: 16px;
-        padding: 16px;
-        border-radius: 12px;
+        padding: 12px 16px;
+        border-radius: 10px;
         text-align: center;
-        font-weight: bold;
-        font-size: clamp(14px, 3.5vw, 16px);
+        font-weight: 500;
+        font-size: 14px;
         display: none;
         animation: slideIn 0.3s ease-out;
       }
@@ -179,30 +291,30 @@
       
       .status-message.success {
         display: block;
-        background: #d4edda;
-        color: #155724;
-        border: 2px solid #c3e6cb;
+        background: var(--success-light);
+        color: #065f46;
+        border: 1px solid #a7f3d0;
       }
       
       .status-message.error {
         display: block;
-        background: #f8d7da;
-        color: #721c24;
-        border: 2px solid #f5c6cb;
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
       }
       
       .status-message.info {
         display: block;
-        background: #d1ecf1;
-        color: #0c5460;
-        border: 2px solid #bee5eb;
+        background: var(--primary-light);
+        color: #1e40af;
+        border: 1px solid #bfdbfe;
       }
       
-      .hint {
+      .helper-text {
         text-align: center;
-        color: #999;
-        font-size: clamp(12px, 3vw, 14px);
-        margin-top: 20px;
+        color: var(--gray-400);
+        font-size: 12px;
+        margin-top: 16px;
         line-height: 1.5;
       }
       
@@ -214,7 +326,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.95);
+        background: rgba(0, 0, 0, 0.97);
         z-index: 9999;
         flex-direction: column;
       }
@@ -227,9 +339,13 @@
         padding: 20px;
         color: white;
         text-align: center;
-        font-size: 18px;
-        font-weight: bold;
+        font-size: 16px;
+        font-weight: 600;
         background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
       }
       
       .camera-body {
@@ -260,10 +376,20 @@
         transform: translate(-50%, -50%);
         width: 250px;
         height: 250px;
-        border: 3px solid #00ff00;
+        border: 3px solid #10b981;
         border-radius: 20px;
         pointer-events: none;
-        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
+        animation: pulse 2s infinite;
+      }
+      
+      @keyframes pulse {
+        0%, 100% {
+          border-color: #10b981;
+        }
+        50% {
+          border-color: #34d399;
+        }
       }
       
       .camera-footer {
@@ -273,83 +399,92 @@
       
       .camera-cancel {
         width: 100%;
-        padding: 16px;
-        background: #dc3545;
+        padding: 14px;
+        background: rgba(255, 255, 255, 0.1);
         color: white;
-        border: none;
+        border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 12px;
-        font-size: 18px;
-        font-weight: bold;
+        font-size: 16px;
+        font-weight: 600;
         cursor: pointer;
         touch-action: manipulation;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
       }
       
       .camera-cancel:active {
-        background: #c82333;
+        background: rgba(255, 255, 255, 0.2);
       }
       
       @media (max-width: 480px) {
-        .container {
+        .content {
           padding: 20px;
-          border-radius: 20px;
         }
         
-        .scanner-box input {
-          padding: 18px 50px 18px 16px;
+        .button-grid {
+          grid-template-columns: 1fr;
         }
         
-        .button-container {
-          flex-direction: column;
-        }
-        
-        .scan-button {
-          width: 100%;
-        }
-      }
-      
-      @media (min-width: 768px) {
-        .container {
-          padding: 40px;
+        .button-full {
+          grid-column: 1;
         }
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>📦 Parcel Scanner</h1>
-      <p class="subtitle">Step 1: Enter Tracking Number</p>
-      
-      <div class="form-group">
-        <label class="form-label" for="trackingNumber">Tracking Number</label>
-        <div class="scanner-box">
-          <input 
-            type="text" 
-            id="trackingNumber" 
-            placeholder="Scan or type tracking number..."
-            autocomplete="off"
-            inputmode="text"
-          />
-          <span class="barcode-icon">📷</span>
+      <div class="header">
+        <div class="header-icon">📦</div>
+        <h1>Parcel Scanner</h1>
+        <p>Scan and track your parcels</p>
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
         </div>
       </div>
       
-      <div class="button-container">
-        <button class="scan-button camera-button" onclick="startScanner()">
-          📷 Scan Code
-        </button>
-        <button class="scan-button photo-button" onclick="scanFromFile()">
-          📁 From Photo
-        </button>
-        <button class="scan-button clear-button" onclick="clearTrackingNumber()">
-          ✕ Clear
-        </button>
-      </div>
-      
-      <div id="statusMessage" class="status-message"></div>
-      
-      <div class="hint">
-        💡 USB scanner: Just scan the code<br>
-        📱 Phone: Use "Scan Code" button for camera
+      <div class="content">
+        <div class="step-indicator">
+          <div class="step-number">1</div>
+          <div class="step-text">Enter Tracking Number</div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="trackingNumber">Tracking Number</label>
+          <div class="scanner-box">
+            <input 
+              type="text" 
+              id="trackingNumber" 
+              placeholder="Scan or type tracking number..."
+              autocomplete="off"
+              inputmode="text"
+            />
+            <span class="scanner-status" id="scannerStatus">📷</span>
+          </div>
+        </div>
+        
+        <div class="button-grid">
+          <button class="action-button primary" onclick="startScanner()">
+            <span class="icon">📷</span>
+            Scan Code
+          </button>
+          <button class="action-button secondary" onclick="scanFromFile()">
+            <span class="icon">📁</span>
+            From Photo
+          </button>
+          <button class="action-button danger button-full" onclick="clearTrackingNumber()" id="clearButton" style="display: none;">
+            <span class="icon">✕</span>
+            Clear Tracking Number
+          </button>
+        </div>
+        
+        <div id="statusMessage" class="status-message"></div>
+        
+        <div class="helper-text">
+          💡 USB scanner: Just scan the code<br>
+          📱 Phone: Use "Scan Code" button for camera
+        </div>
       </div>
     </div>
 
@@ -363,7 +498,9 @@
         <div class="camera-guide"></div>
       </div>
       <div class="camera-footer">
-        <button class="camera-cancel" onclick="stopScanner()">✕ Cancel</button>
+        <button class="camera-cancel" onclick="stopScanner()">
+          ✕ Cancel
+        </button>
       </div>
     </div>
 
@@ -374,6 +511,8 @@
       const input = document.getElementById('trackingNumber');
       const statusMessage = document.getElementById('statusMessage');
       const cameraOverlay = document.getElementById('cameraOverlay');
+      const scannerStatus = document.getElementById('scannerStatus');
+      const clearButton = document.getElementById('clearButton');
       
       let html5QrCode = null;
       let isScanning = false;
@@ -472,7 +611,10 @@
       
       function markAsFilled() {
         input.classList.add('filled');
-        showStatus('✅ Tracking number captured: ' + input.value.trim(), 'success');
+        scannerStatus.textContent = '✅';
+        scannerStatus.classList.add('success');
+        clearButton.style.display = 'block';
+        showStatus('✅ Tracking number captured successfully!', 'success');
         
         // Vibrate for feedback
         if (navigator.vibrate) {
@@ -487,11 +629,14 @@
       
       function removeFilled() {
         input.classList.remove('filled');
+        scannerStatus.textContent = '📷';
+        scannerStatus.classList.remove('success');
+        clearButton.style.display = 'none';
       }
       
       function clearTrackingNumber() {
         input.value = '';
-        input.classList.remove('filled');
+        removeFilled();
         input.focus();
         hideStatus();
       }
@@ -506,7 +651,7 @@
         statusMessage.style.display = 'none';
       }
       
-      // Full-screen camera scanner
+      // Full-screen camera scanner with autofocus
       async function startScanner() {
         if (isScanning) {
           await stopScanner();
@@ -523,6 +668,7 @@
           const config = {
             fps: 10,
             qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0,
             formatsToSupport: [
               Html5QrcodeSupportedFormats.QR_CODE,
               Html5QrcodeSupportedFormats.CODE_128,
@@ -536,14 +682,45 @@
             ]
           };
           
+          // Camera constraints with autofocus
+          const cameraConstraints = {
+            facingMode: "environment",
+            advanced: [
+              {
+                focusMode: "continuous",
+                focusDistance: 0,
+                whiteBalanceMode: "continuous",
+                exposureMode: "continuous"
+              }
+            ]
+          };
+          
           await html5QrCode.start(
-            { facingMode: "environment" },
+            cameraConstraints,
             config,
             onScanSuccess,
             onScanFailure
           );
           
           isScanning = true;
+          
+          // Try to apply autofocus to video track
+          try {
+            const videoElement = document.querySelector('#reader video');
+            if (videoElement && videoElement.srcObject) {
+              const videoTrack = videoElement.srcObject.getVideoTracks()[0];
+              if (videoTrack) {
+                const capabilities = videoTrack.getCapabilities();
+                if (capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
+                  await videoTrack.applyConstraints({
+                    advanced: [{ focusMode: 'continuous' }]
+                  });
+                }
+              }
+            }
+          } catch (focusError) {
+            console.log('Autofocus not supported:', focusError);
+          }
           
         } catch (error) {
           console.error('Camera error:', error);
