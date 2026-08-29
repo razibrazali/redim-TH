@@ -213,14 +213,86 @@
         line-height: 1.5;
       }
       
+      /* Full-screen camera overlay */
+      .camera-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 9999;
+        flex-direction: column;
+      }
+      
+      .camera-overlay.active {
+        display: flex;
+      }
+      
+      .camera-header {
+        padding: 20px;
+        color: white;
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        background: rgba(0, 0, 0, 0.5);
+      }
+      
+      .camera-body {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+      
       #reader {
         width: 100%;
-        max-width: 500px;
-        margin: 0 auto;
+        height: 100%;
+        position: relative;
       }
       
       #reader video {
-        border-radius: 16px;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+      }
+      
+      .camera-guide {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 250px;
+        height: 250px;
+        border: 3px solid #00ff00;
+        border-radius: 20px;
+        pointer-events: none;
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+      }
+      
+      .camera-footer {
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.5);
+      }
+      
+      .camera-cancel {
+        width: 100%;
+        padding: 16px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      
+      .camera-cancel:active {
+        background: #c82333;
       }
       
       @media (max-width: 480px) {
@@ -288,13 +360,19 @@
         💡 Scan barcode or QR code using camera<br>
         Or type manually and press Submit
       </div>
-      
-      <!-- Scanner area (hidden by default) -->
-      <div id="scannerArea" style="display: none; margin-top: 20px;">
+    </div>
+
+    <!-- Full-screen camera overlay -->
+    <div class="camera-overlay" id="cameraOverlay">
+      <div class="camera-header">
+        📷 Point camera at barcode or QR code
+      </div>
+      <div class="camera-body">
         <div id="reader"></div>
-        <button class="scan-button" onclick="stopScanner()" style="background: #dc3545; color: white; width: 100%; margin-top: 10px;">
-          ✕ Cancel
-        </button>
+        <div class="camera-guide"></div>
+      </div>
+      <div class="camera-footer">
+        <button class="camera-cancel" onclick="stopScanner()">✕ Cancel</button>
       </div>
     </div>
 
@@ -308,7 +386,7 @@
       const input = document.getElementById('trackingNumber');
       const statusMessage = document.getElementById('statusMessage');
       const lastTracking = document.getElementById('lastTracking');
-      const scannerArea = document.getElementById('scannerArea');
+      const cameraOverlay = document.getElementById('cameraOverlay');
       
       let html5QrCode = null;
       let isScanning = false;
@@ -358,8 +436,6 @@
           })
         })
         .then(() => {
-          // With no-cors, we can't read the response
-          // Assume success
           input.disabled = false;
           lastTracking.textContent = trackingNumber;
           showStatus('Tracking number ' + trackingNumber + ' saved successfully!', 'success');
@@ -392,7 +468,7 @@
         statusMessage.style.display = 'none';
       }
       
-      // Camera scanner functions
+      // Full-screen camera scanner
       async function startScanner() {
         if (isScanning) {
           await stopScanner();
@@ -400,8 +476,8 @@
         }
         
         try {
-          // Show scanner area
-          scannerArea.style.display = 'block';
+          // Show full-screen overlay
+          cameraOverlay.classList.add('active');
           
           // Create scanner instance
           html5QrCode = new Html5Qrcode("reader");
@@ -433,7 +509,7 @@
           
         } catch (error) {
           console.error('Camera error:', error);
-          scannerArea.style.display = 'none';
+          cameraOverlay.classList.remove('active');
           
           let errorMessage = 'Unable to access camera. ';
           
@@ -478,7 +554,7 @@
           html5QrCode = null;
           isScanning = false;
         }
-        scannerArea.style.display = 'none';
+        cameraOverlay.classList.remove('active');
         input.focus();
       }
       
@@ -531,7 +607,7 @@
       
       // Keep focus on input
       document.querySelector('.container').addEventListener('click', function(e) {
-        if (e.target.tagName !== 'BUTTON' && !scannerArea.contains(e.target)) {
+        if (e.target.tagName !== 'BUTTON') {
           input.focus();
         }
       });
