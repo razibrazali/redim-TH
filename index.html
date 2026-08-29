@@ -355,6 +355,49 @@
         object-fit: contain;
       }
       
+      /* Summary */
+      .summary-container {
+        display: none;
+        margin-top: 20px;
+        padding: 20px;
+        background: var(--success-light);
+        border-radius: 12px;
+        border: 2px solid var(--success);
+      }
+      
+      .summary-container.active {
+        display: block;
+        animation: slideIn 0.5s ease-out;
+      }
+      
+      .summary-title {
+        text-align: center;
+        font-size: 18px;
+        font-weight: 700;
+        color: #065f46;
+        margin-bottom: 16px;
+      }
+      
+      .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+        background: white;
+        border-radius: 8px;
+        margin-bottom: 8px;
+      }
+      
+      .summary-label {
+        font-weight: 600;
+        color: var(--gray-600);
+      }
+      
+      .summary-value {
+        font-weight: 700;
+        color: var(--gray-900);
+      }
+      
       /* Full-screen camera overlay */
       .camera-overlay {
         display: none;
@@ -410,10 +453,6 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-      }
-      
-      #photoCanvas {
-        display: none;
       }
       
       .camera-guide {
@@ -520,7 +559,7 @@
     <div class="container">
       <div class="header">
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner 6:29</h1>
+        <h1>Parcel Scanner</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
@@ -592,11 +631,42 @@
             </button>
           </div>
           
+          <!-- Submit Button -->
+          <button class="action-button success button-full" onclick="submitParcel()" id="submitButton" style="display: none;">
+            <span class="icon">✅</span>
+            Submit Parcel
+          </button>
+          
           <div id="photoStatus" class="status-message"></div>
           
           <div class="helper-text">
             📸 Take a live photo of the parcel on the weight scale
           </div>
+        </div>
+        
+        <!-- Summary -->
+        <div class="summary-container" id="summaryContainer">
+          <div class="summary-title">✅ Parcel Submitted Successfully!</div>
+          
+          <div class="summary-item">
+            <span class="summary-label">Tracking Number:</span>
+            <span class="summary-value" id="summaryTracking">-</span>
+          </div>
+          
+          <div class="summary-item">
+            <span class="summary-label">Weight:</span>
+            <span class="summary-value" id="summaryWeight">-</span>
+          </div>
+          
+          <div class="summary-item">
+            <span class="summary-label">Photo Link:</span>
+            <span class="summary-value" id="summaryLink">-</span>
+          </div>
+          
+          <button class="action-button primary button-full" onclick="resetForm()" style="margin-top: 16px;">
+            <span class="icon">📦</span>
+            Scan Next Parcel
+          </button>
         </div>
       </div>
     </div>
@@ -640,6 +710,8 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     
     <script>
+      const GOOGLE_SCRIPT_URL = 'https://script.google.com/a/macros/airasia.com/s/AKfycbwCasVwQeNY3OP6JTDDrr8Wkp4I6bOWz8jGwYYUQXa5/dev';
+      
       const input = document.getElementById('trackingNumber');
       const statusMessage = document.getElementById('statusMessage');
       const cameraOverlay = document.getElementById('cameraOverlay');
@@ -656,15 +728,19 @@
       const photoVideo = document.getElementById('photoVideo');
       const photoStatus = document.getElementById('photoStatus');
       const retakeButton = document.getElementById('retakeButton');
+      const submitButton = document.getElementById('submitButton');
+      const summaryContainer = document.getElementById('summaryContainer');
+      const summaryTracking = document.getElementById('summaryTracking');
+      const summaryWeight = document.getElementById('summaryWeight');
+      const summaryLink = document.getElementById('summaryLink');
       
       let html5QrCode = null;
       let isScanning = false;
       let lastScannedValue = '';
       let lastScanTime = 0;
       let photoStream = null;
-      let isPhotoCameraOpen = false;
+      let capturedPhotoData = null;
       
-      // Create audio context for beep sound
       let audioContext = null;
       
       function playBeepSound() {
@@ -699,10 +775,8 @@
         }
       }
       
-      // Auto-focus on load
       input.focus();
       
-      // Handle Enter key press (for USB scanners)
       input.addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && this.value.trim() !== '') {
           const now = Date.now();
@@ -718,7 +792,6 @@
         }
       });
       
-      // Handle paste event
       input.addEventListener('paste', function(e) {
         setTimeout(function() {
           if (input.value.trim() !== '') {
@@ -728,7 +801,6 @@
         }, 100);
       });
       
-      // Handle manual typing
       input.addEventListener('input', function() {
         if (this.value.trim() !== '') {
           markAsFilled();
@@ -737,7 +809,6 @@
         }
       });
       
-      // Handle blur
       input.addEventListener('blur', function() {
         if (this.value.trim() !== '') {
           markAsFilled();
@@ -751,7 +822,6 @@
         clearButton.style.display = 'block';
         showStatus('✅ Tracking number captured successfully!', 'success');
         
-        // Show Step 2
         showStep2();
         
         if (navigator.vibrate) {
@@ -769,7 +839,6 @@
         scannerStatus.classList.remove('success');
         clearButton.style.display = 'none';
         
-        // Hide Step 2
         hideStep2();
       }
       
@@ -787,7 +856,6 @@
         step1Number.classList.add('completed');
         step2Number.textContent = '2';
         
-        // Scroll to Step 2
         setTimeout(() => {
           step2Container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 300);
@@ -800,10 +868,11 @@
         step1Number.classList.remove('completed');
         step2Number.textContent = '2';
         
-        // Reset photo
         photoPreview.classList.remove('active');
         capturedPhoto.src = '';
         retakeButton.style.display = 'none';
+        submitButton.style.display = 'none';
+        capturedPhotoData = null;
       }
       
       function showStatus(message, type) {
@@ -826,7 +895,6 @@
         photoStatus.style.display = 'none';
       }
       
-      // Full-screen camera scanner
       async function startScanner() {
         if (isScanning) {
           await stopScanner();
@@ -899,7 +967,7 @@
       }
       
       function onScanFailure(error) {
-        // Silent failure - no code detected yet
+        // Silent failure
       }
       
       async function stopScanner() {
@@ -917,7 +985,6 @@
         input.focus();
       }
       
-      // Manual focus trigger
       cameraBody.addEventListener('click', async function() {
         try {
           const videoElement = document.querySelector('#reader video');
@@ -954,7 +1021,6 @@
         }
       });
       
-      // Scan from file
       function scanFromFile() {
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
@@ -1003,7 +1069,6 @@
         fileInput.click();
       }
       
-      // Step 2 - Photo Capture Functions
       async function openPhotoCamera() {
         try {
           photoCameraOverlay.classList.add('active');
@@ -1019,8 +1084,6 @@
           photoStream = await navigator.mediaDevices.getUserMedia(constraints);
           photoVideo.srcObject = photoStream;
           await photoVideo.play();
-          
-          isPhotoCameraOpen = true;
           
         } catch (error) {
           console.error('Photo camera error:', error);
@@ -1052,22 +1115,30 @@
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        const photoDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        // Add timestamp watermark to canvas
+        const timestamp = new Date();
+        const timestampStr = timestamp.toLocaleString();
+        ctx.font = 'bold 30px Arial';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fillRect(10, canvas.height - 50, 300, 40);
+        ctx.fillStyle = 'black';
+        ctx.fillText(timestampStr, 20, canvas.height - 20);
         
-        // Display preview
+        const photoDataUrl = canvas.toDataURL('image/png');
+        
         capturedPhoto.src = photoDataUrl;
+        capturedPhotoData = photoDataUrl;
         photoPreview.classList.add('active');
         retakeButton.style.display = 'block';
+        submitButton.style.display = 'block';
         
-        // Close camera
         closePhotoCamera();
         
-        // Update Step 2 status
         step2Number.textContent = '✓';
         step2Number.classList.add('completed');
         progressFill.style.width = '100%';
         
-        showPhotoStatus('✅ Photo captured successfully!', 'success');
+        showPhotoStatus('✅ Photo captured! Click Submit to process.', 'success');
         
         if (navigator.vibrate) {
           navigator.vibrate([100, 50, 100]);
@@ -1082,9 +1153,11 @@
         photoPreview.classList.remove('active');
         capturedPhoto.src = '';
         retakeButton.style.display = 'none';
+        submitButton.style.display = 'none';
         step2Number.textContent = '2';
         step2Number.classList.remove('completed');
         progressFill.style.width = '66.66%';
+        capturedPhotoData = null;
         openPhotoCamera();
       }
       
@@ -1094,12 +1167,61 @@
           photoStream = null;
         }
         photoCameraOverlay.classList.remove('active');
-        isPhotoCameraOpen = false;
       }
       
-      // Keep focus on input when clicking anywhere in the container
+      async function submitParcel() {
+        if (!input.value.trim() || !capturedPhotoData) {
+          alert('Please complete all steps before submitting.');
+          return;
+        }
+        
+        submitButton.disabled = true;
+        submitButton.textContent = '⏳ Processing...';
+        
+        try {
+          const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              action: 'submitParcel',
+              trackingNumber: input.value.trim(),
+              photoBase64: capturedPhotoData
+            })
+          });
+          
+          // Since no-cors doesn't return response, show summary with available data
+          showSummary(input.value.trim(), 'Processing...', 'Saving...');
+          
+        } catch (error) {
+          console.error('Submit error:', error);
+          alert('Error submitting parcel: ' + error.message);
+          submitButton.disabled = false;
+          submitButton.textContent = '✅ Submit Parcel';
+        }
+      }
+      
+      function showSummary(trackingNumber, weight, driveLink) {
+        summaryContainer.classList.add('active');
+        summaryTracking.textContent = trackingNumber;
+        summaryWeight.textContent = weight;
+        summaryLink.textContent = driveLink;
+        
+        summaryContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      
+      function resetForm() {
+        input.value = '';
+        removeFilled();
+        summaryContainer.classList.remove('active');
+        hideStep2();
+        input.focus();
+      }
+      
       document.querySelector('.container').addEventListener('click', function(e) {
-        if (e.target.tagName !== 'BUTTON' && !step2Container.contains(e.target)) {
+        if (e.target.tagName !== 'BUTTON' && !step2Container.contains(e.target) && !summaryContainer.contains(e.target)) {
           input.focus();
         }
       });
