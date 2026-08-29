@@ -99,7 +99,6 @@
       .progress-fill {
         height: 100%;
         background: white;
-        width: 33.33%;
         border-radius: 2px;
         transition: width 0.3s ease;
       }
@@ -126,6 +125,11 @@
         font-weight: bold;
         font-size: 14px;
         margin-right: 12px;
+        flex-shrink: 0;
+      }
+      
+      .step-number.completed {
+        background: var(--success);
       }
       
       .step-text {
@@ -318,6 +322,39 @@
         line-height: 1.5;
       }
       
+      /* Step 2 - Photo Capture */
+      .step-2-container {
+        display: none;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 2px solid var(--gray-200);
+      }
+      
+      .step-2-container.active {
+        display: block;
+        animation: slideIn 0.5s ease-out;
+      }
+      
+      .photo-preview {
+        width: 100%;
+        max-height: 300px;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 16px;
+        display: none;
+        background: var(--gray-100);
+      }
+      
+      .photo-preview.active {
+        display: block;
+      }
+      
+      .photo-preview img {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+      }
+      
       /* Full-screen camera overlay */
       .camera-overlay {
         display: none;
@@ -369,6 +406,16 @@
         object-fit: cover !important;
       }
       
+      #photoVideo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
+      #photoCanvas {
+        display: none;
+      }
+      
       .camera-guide {
         position: absolute;
         top: 50%;
@@ -404,16 +451,6 @@
         padding: 8px 16px;
         border-radius: 20px;
         pointer-events: none;
-        animation: fadeInOut 2s infinite;
-      }
-      
-      @keyframes fadeInOut {
-        0%, 100% {
-          opacity: 0.7;
-        }
-        50% {
-          opacity: 1;
-        }
       }
       
       .camera-footer {
@@ -442,6 +479,28 @@
         background: rgba(255, 255, 255, 0.2);
       }
       
+      .camera-capture {
+        width: 100%;
+        padding: 14px;
+        background: var(--success);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        touch-action: manipulation;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      
+      .camera-capture:active {
+        background: #059669;
+      }
+      
       @media (max-width: 480px) {
         .content {
           padding: 20px;
@@ -461,16 +520,17 @@
     <div class="container">
       <div class="header">
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner 6:17</h1>
+        <h1>Parcel Scanner 6:29</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
-          <div class="progress-fill"></div>
+          <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
         </div>
       </div>
       
       <div class="content">
+        <!-- Step 1 -->
         <div class="step-indicator">
-          <div class="step-number">1</div>
+          <div class="step-number completed" id="step1Number">✓</div>
           <div class="step-text">Enter Tracking Number</div>
         </div>
         
@@ -505,14 +565,43 @@
         
         <div id="statusMessage" class="status-message"></div>
         
-        <div class="helper-text">
+        <div class="helper-text" id="helperText">
           💡 USB scanner: Just scan the code<br>
           📱 Phone: Use "Scan Code" button for camera
+        </div>
+        
+        <!-- Step 2 - Photo Capture -->
+        <div class="step-2-container" id="step2Container">
+          <div class="step-indicator">
+            <div class="step-number" id="step2Number">2</div>
+            <div class="step-text">Capture Weight Scale Photo</div>
+          </div>
+          
+          <div class="photo-preview" id="photoPreview">
+            <img id="capturedPhoto" alt="Captured parcel on scale">
+          </div>
+          
+          <div class="button-grid">
+            <button class="action-button primary" onclick="openPhotoCamera()">
+              <span class="icon">📸</span>
+              Take Photo
+            </button>
+            <button class="action-button danger" onclick="retakePhoto()" id="retakeButton" style="display: none;">
+              <span class="icon">🔄</span>
+              Retake
+            </button>
+          </div>
+          
+          <div id="photoStatus" class="status-message"></div>
+          
+          <div class="helper-text">
+            📸 Take a live photo of the parcel on the weight scale
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Full-screen camera overlay -->
+    <!-- Full-screen camera overlay for barcode scanning -->
     <div class="camera-overlay" id="cameraOverlay">
       <div class="camera-header">
         📷 Point camera at barcode or QR code
@@ -528,6 +617,24 @@
         </button>
       </div>
     </div>
+    
+    <!-- Full-screen camera overlay for photo capture -->
+    <div class="camera-overlay" id="photoCameraOverlay">
+      <div class="camera-header">
+        📸 Position parcel and scale in frame
+      </div>
+      <div class="camera-body">
+        <video id="photoVideo" autoplay playsinline></video>
+      </div>
+      <div class="camera-footer">
+        <button class="camera-capture" onclick="capturePhoto()">
+          📸 Capture Photo
+        </button>
+        <button class="camera-cancel" onclick="closePhotoCamera()">
+          ✕ Cancel
+        </button>
+      </div>
+    </div>
 
     <!-- html5-qrcode library -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -539,46 +646,50 @@
       const scannerStatus = document.getElementById('scannerStatus');
       const clearButton = document.getElementById('clearButton');
       const cameraBody = document.getElementById('cameraBody');
+      const step2Container = document.getElementById('step2Container');
+      const progressFill = document.getElementById('progressFill');
+      const step1Number = document.getElementById('step1Number');
+      const step2Number = document.getElementById('step2Number');
+      const photoPreview = document.getElementById('photoPreview');
+      const capturedPhoto = document.getElementById('capturedPhoto');
+      const photoCameraOverlay = document.getElementById('photoCameraOverlay');
+      const photoVideo = document.getElementById('photoVideo');
+      const photoStatus = document.getElementById('photoStatus');
+      const retakeButton = document.getElementById('retakeButton');
       
       let html5QrCode = null;
       let isScanning = false;
       let lastScannedValue = '';
       let lastScanTime = 0;
+      let photoStream = null;
+      let isPhotoCameraOpen = false;
       
       // Create audio context for beep sound
       let audioContext = null;
       
       function playBeepSound() {
         try {
-          // Create audio context if not exists
           if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
           }
           
-          // Resume context if suspended (mobile browsers)
           if (audioContext.state === 'suspended') {
             audioContext.resume();
           }
           
-          // Create oscillator for beep
           const oscillator = audioContext.createOscillator();
           const gainNode = audioContext.createGain();
           
-          // Connect oscillator to gain node and gain node to speakers
           oscillator.connect(gainNode);
           gainNode.connect(audioContext.destination);
           
-          // Set beep frequency (like supermarket scanner)
-          oscillator.frequency.value = 2000; // High-pitched beep
-          oscillator.type = 'square'; // Sharp sound
+          oscillator.frequency.value = 2000;
+          oscillator.type = 'square';
           
-          // Set volume
           gainNode.gain.value = 0.3;
           
-          // Play beep
           oscillator.start();
           
-          // Stop after 100ms
           setTimeout(function() {
             oscillator.stop();
           }, 100);
@@ -594,16 +705,14 @@
       // Handle Enter key press (for USB scanners)
       input.addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && this.value.trim() !== '') {
-          // Check for duplicate scan (some scanners send Enter twice)
           const now = Date.now();
           if (this.value.trim() === lastScannedValue && now - lastScanTime < 500) {
-            return; // Ignore duplicate
+            return;
           }
           
           lastScannedValue = this.value.trim();
           lastScanTime = now;
           
-          // USB scanner detected - play beep and mark as filled
           playBeepSound();
           markAsFilled();
         }
@@ -628,7 +737,7 @@
         }
       });
       
-      // Handle blur (when scanner finishes)
+      // Handle blur
       input.addEventListener('blur', function() {
         if (this.value.trim() !== '') {
           markAsFilled();
@@ -642,12 +751,13 @@
         clearButton.style.display = 'block';
         showStatus('✅ Tracking number captured successfully!', 'success');
         
-        // Vibrate for feedback
+        // Show Step 2
+        showStep2();
+        
         if (navigator.vibrate) {
           navigator.vibrate(100);
         }
         
-        // Hide status after 2 seconds
         setTimeout(function() {
           hideStatus();
         }, 2000);
@@ -658,6 +768,9 @@
         scannerStatus.textContent = '📷';
         scannerStatus.classList.remove('success');
         clearButton.style.display = 'none';
+        
+        // Hide Step 2
+        hideStep2();
       }
       
       function clearTrackingNumber() {
@@ -665,6 +778,32 @@
         removeFilled();
         input.focus();
         hideStatus();
+      }
+      
+      function showStep2() {
+        step2Container.classList.add('active');
+        progressFill.style.width = '66.66%';
+        step1Number.textContent = '✓';
+        step1Number.classList.add('completed');
+        step2Number.textContent = '2';
+        
+        // Scroll to Step 2
+        setTimeout(() => {
+          step2Container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 300);
+      }
+      
+      function hideStep2() {
+        step2Container.classList.remove('active');
+        progressFill.style.width = '33.33%';
+        step1Number.textContent = '1';
+        step1Number.classList.remove('completed');
+        step2Number.textContent = '2';
+        
+        // Reset photo
+        photoPreview.classList.remove('active');
+        capturedPhoto.src = '';
+        retakeButton.style.display = 'none';
       }
       
       function showStatus(message, type) {
@@ -677,6 +816,16 @@
         statusMessage.style.display = 'none';
       }
       
+      function showPhotoStatus(message, type) {
+        photoStatus.textContent = message;
+        photoStatus.className = 'status-message ' + type;
+        photoStatus.style.display = 'block';
+      }
+      
+      function hidePhotoStatus() {
+        photoStatus.style.display = 'none';
+      }
+      
       // Full-screen camera scanner
       async function startScanner() {
         if (isScanning) {
@@ -685,10 +834,8 @@
         }
         
         try {
-          // Show full-screen overlay
           cameraOverlay.classList.add('active');
           
-          // Create scanner instance
           html5QrCode = new Html5Qrcode("reader");
           
           const config = {
@@ -741,10 +888,8 @@
       function onScanSuccess(decodedText, decodedResult) {
         stopScanner();
         
-        // Play beep sound
         playBeepSound();
         
-        // Fill the input with scanned value
         input.value = decodedText;
         markAsFilled();
         
@@ -772,7 +917,7 @@
         input.focus();
       }
       
-      // Manual focus trigger - tap on screen to focus
+      // Manual focus trigger
       cameraBody.addEventListener('click', async function() {
         try {
           const videoElement = document.querySelector('#reader video');
@@ -784,7 +929,6 @@
               if (capabilities.focusMode) {
                 const focusModes = capabilities.focusMode;
                 
-                // Try continuous autofocus first
                 if (focusModes.includes('continuous')) {
                   await videoTrack.applyConstraints({
                     advanced: [{ focusMode: 'continuous' }]
@@ -795,8 +939,13 @@
                   });
                 }
                 
-                // Visual feedback
-                showFocusFeedback();
+                const guide = document.querySelector('.camera-guide');
+                guide.style.borderColor = '#ffffff';
+                guide.style.transition = 'border-color 0.3s';
+                
+                setTimeout(() => {
+                  guide.style.borderColor = '#10b981';
+                }, 300);
               }
             }
           }
@@ -804,17 +953,6 @@
           console.log('Manual focus not supported:', error);
         }
       });
-      
-      function showFocusFeedback() {
-        // Flash the guide box
-        const guide = document.querySelector('.camera-guide');
-        guide.style.borderColor = '#ffffff';
-        guide.style.transition = 'border-color 0.3s';
-        
-        setTimeout(() => {
-          guide.style.borderColor = '#10b981';
-        }, 300);
-      }
       
       // Scan from file
       function scanFromFile() {
@@ -840,7 +978,6 @@
                 tempScanner.clear();
                 tempContainer.remove();
                 
-                // Play beep sound
                 playBeepSound();
                 
                 input.value = decodedText;
@@ -866,9 +1003,103 @@
         fileInput.click();
       }
       
+      // Step 2 - Photo Capture Functions
+      async function openPhotoCamera() {
+        try {
+          photoCameraOverlay.classList.add('active');
+          
+          const constraints = {
+            video: {
+              facingMode: { ideal: 'environment' },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
+            }
+          };
+          
+          photoStream = await navigator.mediaDevices.getUserMedia(constraints);
+          photoVideo.srcObject = photoStream;
+          await photoVideo.play();
+          
+          isPhotoCameraOpen = true;
+          
+        } catch (error) {
+          console.error('Photo camera error:', error);
+          photoCameraOverlay.classList.remove('active');
+          
+          let errorMessage = 'Unable to access camera. ';
+          
+          if (error.name === 'NotAllowedError' || error.message.includes('permission')) {
+            errorMessage += 'Camera permission denied. Please allow camera access in your browser settings.';
+          } else if (error.name === 'NotFoundError') {
+            errorMessage += 'No camera found on this device.';
+          } else {
+            errorMessage += error.message;
+          }
+          
+          alert(errorMessage);
+        }
+      }
+      
+      function capturePhoto() {
+        if (!photoStream) return;
+        
+        const canvas = document.createElement('canvas');
+        const video = photoVideo;
+        
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        const photoDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        
+        // Display preview
+        capturedPhoto.src = photoDataUrl;
+        photoPreview.classList.add('active');
+        retakeButton.style.display = 'block';
+        
+        // Close camera
+        closePhotoCamera();
+        
+        // Update Step 2 status
+        step2Number.textContent = '✓';
+        step2Number.classList.add('completed');
+        progressFill.style.width = '100%';
+        
+        showPhotoStatus('✅ Photo captured successfully!', 'success');
+        
+        if (navigator.vibrate) {
+          navigator.vibrate([100, 50, 100]);
+        }
+        
+        setTimeout(() => {
+          hidePhotoStatus();
+        }, 3000);
+      }
+      
+      function retakePhoto() {
+        photoPreview.classList.remove('active');
+        capturedPhoto.src = '';
+        retakeButton.style.display = 'none';
+        step2Number.textContent = '2';
+        step2Number.classList.remove('completed');
+        progressFill.style.width = '66.66%';
+        openPhotoCamera();
+      }
+      
+      function closePhotoCamera() {
+        if (photoStream) {
+          photoStream.getTracks().forEach(track => track.stop());
+          photoStream = null;
+        }
+        photoCameraOverlay.classList.remove('active');
+        isPhotoCameraOpen = false;
+      }
+      
       // Keep focus on input when clicking anywhere in the container
       document.querySelector('.container').addEventListener('click', function(e) {
-        if (e.target.tagName !== 'BUTTON') {
+        if (e.target.tagName !== 'BUTTON' && !step2Container.contains(e.target)) {
           input.focus();
         }
       });
