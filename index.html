@@ -355,6 +355,41 @@
         object-fit: contain;
       }
       
+      /* Log Console */
+      .log-console {
+        margin-top: 16px;
+        padding: 12px;
+        background: var(--gray-900);
+        border-radius: 8px;
+        max-height: 200px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 12px;
+        display: none;
+      }
+      
+      .log-console.active {
+        display: block;
+      }
+      
+      .log-entry {
+        color: #10b981;
+        margin-bottom: 4px;
+        word-break: break-all;
+      }
+      
+      .log-entry.error {
+        color: #ef4444;
+      }
+      
+      .log-entry.info {
+        color: #60a5fa;
+      }
+      
+      .log-entry.warning {
+        color: #f59e0b;
+      }
+      
       /* Summary */
       .summary-container {
         display: none;
@@ -644,6 +679,9 @@
           </div>
         </div>
         
+        <!-- Log Console -->
+        <div class="log-console" id="logConsole"></div>
+        
         <!-- Summary -->
         <div class="summary-container" id="summaryContainer">
           <div class="summary-title">✅ Parcel Submitted Successfully!</div>
@@ -733,6 +771,7 @@
       const summaryTracking = document.getElementById('summaryTracking');
       const summaryWeight = document.getElementById('summaryWeight');
       const summaryLink = document.getElementById('summaryLink');
+      const logConsole = document.getElementById('logConsole');
       
       let html5QrCode = null;
       let isScanning = false;
@@ -742,6 +781,16 @@
       let capturedPhotoData = null;
       
       let audioContext = null;
+      
+      function addLog(message, type = 'info') {
+        console.log(message);
+        logConsole.classList.add('active');
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-entry ' + type;
+        logEntry.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+        logConsole.appendChild(logEntry);
+        logConsole.scrollTop = logConsole.scrollHeight;
+      }
       
       function playBeepSound() {
         try {
@@ -771,7 +820,7 @@
           }, 100);
           
         } catch (e) {
-          console.log('Audio not available:', e);
+          addLog('Audio not available: ' + e.message, 'error');
         }
       }
       
@@ -787,6 +836,7 @@
           lastScannedValue = this.value.trim();
           lastScanTime = now;
           
+          addLog('Tracking number entered: ' + this.value.trim(), 'info');
           playBeepSound();
           markAsFilled();
         }
@@ -795,6 +845,7 @@
       input.addEventListener('paste', function(e) {
         setTimeout(function() {
           if (input.value.trim() !== '') {
+            addLog('Tracking number pasted: ' + input.value.trim(), 'info');
             playBeepSound();
             markAsFilled();
           }
@@ -821,6 +872,7 @@
         scannerStatus.classList.add('success');
         clearButton.style.display = 'block';
         showStatus('✅ Tracking number captured successfully!', 'success');
+        addLog('Step 1 completed: Tracking number = ' + input.value.trim(), 'info');
         
         showStep2();
         
@@ -847,6 +899,7 @@
         removeFilled();
         input.focus();
         hideStatus();
+        addLog('Tracking number cleared', 'warning');
       }
       
       function showStep2() {
@@ -855,6 +908,7 @@
         step1Number.textContent = '✓';
         step1Number.classList.add('completed');
         step2Number.textContent = '2';
+        addLog('Step 2 shown: Capture photo', 'info');
         
         setTimeout(() => {
           step2Container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -902,6 +956,7 @@
         }
         
         try {
+          addLog('Opening barcode scanner...', 'info');
           cameraOverlay.classList.add('active');
           
           html5QrCode = new Html5Qrcode("reader");
@@ -931,9 +986,11 @@
           );
           
           isScanning = true;
+          addLog('Scanner started successfully', 'info');
           
         } catch (error) {
           console.error('Camera error:', error);
+          addLog('Scanner error: ' + error.message, 'error');
           cameraOverlay.classList.remove('active');
           
           let errorMessage = 'Unable to access camera. ';
@@ -954,6 +1011,7 @@
       }
       
       function onScanSuccess(decodedText, decodedResult) {
+        addLog('Code detected: ' + decodedText, 'info');
         stopScanner();
         
         playBeepSound();
@@ -975,8 +1033,9 @@
           try {
             await html5QrCode.stop();
             await html5QrCode.clear();
+            addLog('Scanner stopped', 'info');
           } catch (e) {
-            console.log('Error stopping scanner:', e);
+            addLog('Error stopping scanner: ' + e.message, 'error');
           }
           html5QrCode = null;
           isScanning = false;
@@ -987,6 +1046,7 @@
       
       cameraBody.addEventListener('click', async function() {
         try {
+          addLog('Manual focus triggered', 'info');
           const videoElement = document.querySelector('#reader video');
           if (videoElement && videoElement.srcObject) {
             const videoTrack = videoElement.srcObject.getVideoTracks()[0];
@@ -1000,10 +1060,12 @@
                   await videoTrack.applyConstraints({
                     advanced: [{ focusMode: 'continuous' }]
                   });
+                  addLog('Continuous focus applied', 'info');
                 } else if (focusModes.includes('auto')) {
                   await videoTrack.applyConstraints({
                     advanced: [{ focusMode: 'auto' }]
                   });
+                  addLog('Auto focus applied', 'info');
                 }
                 
                 const guide = document.querySelector('.camera-guide');
@@ -1017,7 +1079,7 @@
             }
           }
         } catch (error) {
-          console.log('Manual focus not supported:', error);
+          addLog('Manual focus error: ' + error.message, 'error');
         }
       });
       
@@ -1030,6 +1092,7 @@
         fileInput.onchange = function(e) {
           const file = e.target.files[0];
           if (file) {
+            addLog('File selected for scanning: ' + file.name, 'info');
             showStatus('Decoding code...', 'info');
             
             const tempScanner = new Html5Qrcode("tempScanner");
@@ -1044,6 +1107,7 @@
                 tempScanner.clear();
                 tempContainer.remove();
                 
+                addLog('Code found in file: ' + decodedText, 'info');
                 playBeepSound();
                 
                 input.value = decodedText;
@@ -1055,6 +1119,7 @@
               })
               .catch(err => {
                 console.error('Scan error:', err);
+                addLog('File scan error: ' + err.message, 'error');
                 tempScanner.clear();
                 tempContainer.remove();
                 
@@ -1071,6 +1136,7 @@
       
       async function openPhotoCamera() {
         try {
+          addLog('Opening photo camera...', 'info');
           photoCameraOverlay.classList.add('active');
           
           const constraints = {
@@ -1084,9 +1150,11 @@
           photoStream = await navigator.mediaDevices.getUserMedia(constraints);
           photoVideo.srcObject = photoStream;
           await photoVideo.play();
+          addLog('Photo camera ready', 'info');
           
         } catch (error) {
           console.error('Photo camera error:', error);
+          addLog('Photo camera error: ' + error.message, 'error');
           photoCameraOverlay.classList.remove('active');
           
           let errorMessage = 'Unable to access camera. ';
@@ -1106,6 +1174,8 @@
       function capturePhoto() {
         if (!photoStream) return;
         
+        addLog('Photo captured', 'info');
+        
         const canvas = document.createElement('canvas');
         const video = photoVideo;
         
@@ -1123,6 +1193,7 @@
         ctx.fillRect(10, canvas.height - 50, 300, 40);
         ctx.fillStyle = 'black';
         ctx.fillText(timestampStr, 20, canvas.height - 20);
+        addLog('Timestamp watermark added: ' + timestampStr, 'info');
         
         const photoDataUrl = canvas.toDataURL('image/png');
         
@@ -1139,6 +1210,7 @@
         progressFill.style.width = '100%';
         
         showPhotoStatus('✅ Photo captured! Click Submit to process.', 'success');
+        addLog('Step 2 completed: Photo ready for submission', 'info');
         
         if (navigator.vibrate) {
           navigator.vibrate([100, 50, 100]);
@@ -1150,6 +1222,7 @@
       }
       
       function retakePhoto() {
+        addLog('Retaking photo...', 'warning');
         photoPreview.classList.remove('active');
         capturedPhoto.src = '';
         retakeButton.style.display = 'none';
@@ -1167,36 +1240,56 @@
           photoStream = null;
         }
         photoCameraOverlay.classList.remove('active');
+        addLog('Photo camera closed', 'info');
       }
       
       async function submitParcel() {
         if (!input.value.trim() || !capturedPhotoData) {
+          addLog('Submit attempted with missing data', 'error');
           alert('Please complete all steps before submitting.');
           return;
         }
+        
+        addLog('=== SUBMITTING PARCEL ===', 'info');
+        addLog('Tracking Number: ' + input.value.trim(), 'info');
+        addLog('Photo data size: ' + Math.round(capturedPhotoData.length / 1024) + ' KB', 'info');
         
         submitButton.disabled = true;
         submitButton.textContent = '⏳ Processing...';
         
         try {
+          addLog('Sending request to Google Apps Script...', 'info');
+          addLog('URL: ' + GOOGLE_SCRIPT_URL, 'info');
+          
+          const payload = {
+            action: 'submitParcel',
+            trackingNumber: input.value.trim(),
+            photoBase64: capturedPhotoData
+          };
+          
+          addLog('Payload: ' + JSON.stringify({
+            action: payload.action,
+            trackingNumber: payload.trackingNumber,
+            photoBase64: payload.photoBase64.substring(0, 50) + '...'
+          }), 'info');
+          
           const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              action: 'submitParcel',
-              trackingNumber: input.value.trim(),
-              photoBase64: capturedPhotoData
-            })
+            body: JSON.stringify(payload)
           });
           
-          // Since no-cors doesn't return response, show summary with available data
+          addLog('Request sent successfully (no-cors mode - no response body)', 'info');
+          addLog('=== SUBMISSION COMPLETE ===', 'info');
+          
           showSummary(input.value.trim(), 'Processing...', 'Saving...');
           
         } catch (error) {
           console.error('Submit error:', error);
+          addLog('Submit error: ' + error.message, 'error');
           alert('Error submitting parcel: ' + error.message);
           submitButton.disabled = false;
           submitButton.textContent = '✅ Submit Parcel';
@@ -1204,6 +1297,11 @@
       }
       
       function showSummary(trackingNumber, weight, driveLink) {
+        addLog('Showing summary...', 'info');
+        addLog('Tracking: ' + trackingNumber, 'info');
+        addLog('Weight: ' + weight, 'info');
+        addLog('Drive Link: ' + driveLink, 'info');
+        
         summaryContainer.classList.add('active');
         summaryTracking.textContent = trackingNumber;
         summaryWeight.textContent = weight;
@@ -1213,6 +1311,7 @@
       }
       
       function resetForm() {
+        addLog('Form reset for next parcel', 'warning');
         input.value = '';
         removeFilled();
         summaryContainer.classList.remove('active');
