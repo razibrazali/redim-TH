@@ -50,9 +50,20 @@
         margin-bottom: 24px;
       }
       
+      .form-group {
+        margin: 20px 0;
+      }
+      
+      .form-label {
+        display: block;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+        font-size: clamp(16px, 4vw, 18px);
+      }
+      
       .scanner-box {
         position: relative;
-        margin: 20px 0;
       }
       
       .scanner-box input {
@@ -77,6 +88,11 @@
       .scanner-box input::placeholder {
         color: #999;
         font-weight: normal;
+      }
+      
+      .scanner-box input.filled {
+        border-color: #28a745;
+        background: #f0fff4;
       }
       
       .barcode-icon {
@@ -130,13 +146,13 @@
         background: #5a6268;
       }
       
-      .submit-button {
-        background: #28a745;
-        color: white;
+      .clear-button {
+        background: #ffc107;
+        color: #333;
       }
       
-      .submit-button:active {
-        background: #218838;
+      .clear-button:active {
+        background: #e0a800;
       }
       
       .status-message {
@@ -180,29 +196,6 @@
         background: #d1ecf1;
         color: #0c5460;
         border: 2px solid #bee5eb;
-      }
-      
-      .scanned-data {
-        margin-top: 20px;
-        padding: 20px;
-        background: #f8f9fa;
-        border-radius: 16px;
-        font-size: clamp(14px, 3.5vw, 16px);
-        color: #666;
-      }
-      
-      .scanned-data strong {
-        color: #333;
-        display: block;
-        margin-bottom: 8px;
-      }
-      
-      .tracking-number-display {
-        font-size: clamp(18px, 5vw, 24px);
-        font-weight: bold;
-        color: #667eea;
-        word-break: break-all;
-        padding: 8px 0;
       }
       
       .hint {
@@ -324,17 +317,20 @@
   <body>
     <div class="container">
       <h1>📦 Parcel Scanner</h1>
-      <p class="subtitle">Scan barcode or QR code</p>
+      <p class="subtitle">Step 1: Enter Tracking Number</p>
       
-      <div class="scanner-box">
-        <input 
-          type="text" 
-          id="trackingNumber" 
-          placeholder="Tracking number will appear here..."
-          autocomplete="off"
-          inputmode="text"
-        />
-        <span class="barcode-icon">📷</span>
+      <div class="form-group">
+        <label class="form-label" for="trackingNumber">Tracking Number</label>
+        <div class="scanner-box">
+          <input 
+            type="text" 
+            id="trackingNumber" 
+            placeholder="Scan or type tracking number..."
+            autocomplete="off"
+            inputmode="text"
+          />
+          <span class="barcode-icon">📷</span>
+        </div>
       </div>
       
       <div class="button-container">
@@ -344,21 +340,16 @@
         <button class="scan-button photo-button" onclick="scanFromFile()">
           📁 From Photo
         </button>
-        <button class="scan-button submit-button" onclick="submitManual()">
-          ✓ Submit
+        <button class="scan-button clear-button" onclick="clearTrackingNumber()">
+          ✕ Clear
         </button>
       </div>
       
       <div id="statusMessage" class="status-message"></div>
       
-      <div class="scanned-data" id="scannedData">
-        <strong>Last Scanned:</strong>
-        <div class="tracking-number-display" id="lastTracking">None</div>
-      </div>
-      
       <div class="hint">
-        💡 Scan barcode or QR code using camera<br>
-        Or type manually and press Submit
+        💡 USB scanner: Just scan the code<br>
+        📱 Phone: Use "Scan Code" button for camera
       </div>
     </div>
 
@@ -380,12 +371,8 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     
     <script>
-      // CONFIGURATION - Replace with your Google Apps Script Web App URL
-      const GOOGLE_SCRIPT_URL = 'https://script.google.com/a/macros/airasia.com/s/AKfycbwCasVwQeNY3OP6JTDDrr8Wkp4I6bOWz8jGwYYUQXa5/dev';
-      
       const input = document.getElementById('trackingNumber');
       const statusMessage = document.getElementById('statusMessage');
-      const lastTracking = document.getElementById('lastTracking');
       const cameraOverlay = document.getElementById('cameraOverlay');
       
       let html5QrCode = null;
@@ -394,10 +381,11 @@
       // Auto-focus on load
       input.focus();
       
-      // Handle Enter key press
+      // Handle Enter key press (for USB scanners)
       input.addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && this.value.trim() !== '') {
-          handleTrackingNumber(this.value.trim());
+          // USB scanner detected - just mark as filled
+          markAsFilled();
         }
       });
       
@@ -405,57 +393,51 @@
       input.addEventListener('paste', function(e) {
         setTimeout(function() {
           if (input.value.trim() !== '') {
-            handleTrackingNumber(input.value.trim());
+            markAsFilled();
           }
         }, 100);
       });
       
-      function submitManual() {
-        if (input.value.trim() !== '') {
-          handleTrackingNumber(input.value.trim());
+      // Handle manual typing
+      input.addEventListener('input', function() {
+        if (this.value.trim() !== '') {
+          markAsFilled();
         } else {
-          showStatus('Please enter a tracking number first', 'error');
-          input.focus();
+          removeFilled();
         }
+      });
+      
+      // Handle blur (when scanner finishes)
+      input.addEventListener('blur', function() {
+        if (this.value.trim() !== '') {
+          markAsFilled();
+        }
+      });
+      
+      function markAsFilled() {
+        input.classList.add('filled');
+        showStatus('✅ Tracking number captured: ' + input.value.trim(), 'success');
+        
+        // Vibrate for feedback
+        if (navigator.vibrate) {
+          navigator.vibrate(100);
+        }
+        
+        // Hide status after 2 seconds
+        setTimeout(function() {
+          hideStatus();
+        }, 2000);
       }
       
-      function handleTrackingNumber(trackingNumber) {
-        showStatus('Processing...', 'info');
-        input.disabled = true;
-        
-        // Save to Google Sheets via Apps Script
-        fetch(GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            action: 'saveTrackingNumber',
-            trackingNumber: trackingNumber
-          })
-        })
-        .then(() => {
-          input.disabled = false;
-          lastTracking.textContent = trackingNumber;
-          showStatus('Tracking number ' + trackingNumber + ' saved successfully!', 'success');
-          
-          input.value = '';
-          input.focus();
-          
-          if (navigator.vibrate) {
-            navigator.vibrate(100);
-          }
-          
-          setTimeout(function() {
-            hideStatus();
-          }, 3000);
-        })
-        .catch(error => {
-          input.disabled = false;
-          showStatus('Error: ' + error.message, 'error');
-          input.focus();
-        });
+      function removeFilled() {
+        input.classList.remove('filled');
+      }
+      
+      function clearTrackingNumber() {
+        input.value = '';
+        input.classList.remove('filled');
+        input.focus();
+        hideStatus();
       }
       
       function showStatus(message, type) {
@@ -531,8 +513,9 @@
       function onScanSuccess(decodedText, decodedResult) {
         stopScanner();
         
+        // Fill the input with scanned value
         input.value = decodedText;
-        handleTrackingNumber(decodedText);
+        markAsFilled();
         
         if (navigator.vibrate) {
           navigator.vibrate([100, 50, 100]);
@@ -583,7 +566,7 @@
                 tempContainer.remove();
                 
                 input.value = decodedText;
-                handleTrackingNumber(decodedText);
+                markAsFilled();
                 
                 if (navigator.vibrate) {
                   navigator.vibrate([100, 50, 100]);
@@ -605,7 +588,7 @@
         fileInput.click();
       }
       
-      // Keep focus on input
+      // Keep focus on input when clicking anywhere in the container
       document.querySelector('.container').addEventListener('click', function(e) {
         if (e.target.tagName !== 'BUTTON') {
           input.focus();
