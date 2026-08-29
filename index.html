@@ -357,16 +357,10 @@
         overflow: hidden;
       }
       
-      #reader {
+      #cameraVideo {
         width: 100%;
         height: 100%;
-        position: relative;
-      }
-      
-      #reader video {
-        width: 100% !important;
-        height: 100% !important;
-        object-fit: cover !important;
+        object-fit: cover;
       }
       
       .camera-guide {
@@ -494,7 +488,7 @@
         📷 Point camera at barcode or QR code
       </div>
       <div class="camera-body">
-        <div id="reader"></div>
+        <video id="cameraVideo" autoplay playsinline></video>
         <div class="camera-guide"></div>
       </div>
       <div class="camera-footer">
@@ -504,7 +498,7 @@
       </div>
     </div>
 
-    <!-- html5-qrcode library -->
+    <!-- html5-qrcode library for decoding -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     
     <script>
@@ -513,11 +507,13 @@
       const cameraOverlay = document.getElementById('cameraOverlay');
       const scannerStatus = document.getElementById('scannerStatus');
       const clearButton = document.getElementById('clearButton');
+      const cameraVideo = document.getElementById('cameraVideo');
       
-      let html5QrCode = null;
+      let stream = null;
       let isScanning = false;
       let lastScannedValue = '';
       let lastScanTime = 0;
+      let scanInterval = null;
       
       // Create audio context for beep sound
       let audioContext = null;
@@ -651,7 +647,7 @@
         statusMessage.style.display = 'none';
       }
       
-      // Full-screen camera scanner with autofocus
+      // Full-screen camera scanner with direct getUserMedia
       async function startScanner() {
         if (isScanning) {
           await stopScanner();
@@ -662,60 +658,62 @@
           // Show full-screen overlay
           cameraOverlay.classList.add('active');
           
-          // Create scanner instance
-          html5QrCode = new Html5Qrcode("reader");
-          
-          const config = {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0,
-            formatsToSupport: [
-              Html5QrcodeSupportedFormats.QR_CODE,
-              Html5QrcodeSupportedFormats.CODE_128,
-              Html5QrcodeSupportedFormats.CODE_39,
-              Html5QrcodeSupportedFormats.EAN_13,
-              Html5QrcodeSupportedFormats.EAN_8,
-              Html5QrcodeSupportedFormats.UPC_A,
-              Html5QrcodeSupportedFormats.UPC_E,
-              Html5QrcodeSupportedFormats.CODABAR,
-              Html5QrcodeSupportedFormats.ITF
-            ]
+          // Request camera with autofocus
+          const constraints = {
+            video: {
+              facingMode: { ideal: 'environment' },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
+            }
           };
           
-          // Simple camera constraint (html5-qrcode expects simple object)
-          const cameraConstraints = {
-            facingMode: "environment"
-          };
-          
-          await html5QrCode.start(
-            cameraConstraints,
-            config,
-            onScanSuccess,
-            onScanFailure
-          );
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+          cameraVideo.srcObject = stream;
+          await cameraVideo.play();
           
           isScanning = true;
           
-          // Try to apply autofocus after camera starts
-          setTimeout(async () => {
-            try {
-              const videoElement = document.querySelector('#reader video');
-              if (videoElement && videoElement.srcObject) {
-                const videoTrack = videoElement.srcObject.getVideoTracks()[0];
-                if (videoTrack && videoTrack.getCapabilities) {
-                  const capabilities = videoTrack.getCapabilities();
-                  if (capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
-                    await videoTrack.applyConstraints({
-                      advanced: [{ focusMode: 'continuous' }]
-                    });
-                    console.log('Autofocus applied');
-                  }
-                }
+          // Apply autofocus if available
+          try {
+            const videoTrack = stream.getVideoTracks()[0];
+            const capabilities = videoTrack.getCapabilities();
+            
+            if (capabilities.focusMode) {
+              const focusModes = capabilities.focusMode;
+              
+              // Try continuous autofocus first
+              if (focusModes.includes('continuous')) {
+                await videoTrack.applyConstraints({
+                  advanced: [{ focusMode: 'continuous' }]
+                });
+                console.log('Continuous autofocus applied');
+              } else if (focusModes.includes('auto')) {
+                await videoTrack.applyConstraints({
+                  advanced: [{ focusMode: 'auto' }]
+                });
+                console.log('Auto focus applied');
               }
-            } catch (focusError) {
-              console.log('Autofocus not supported:', focusError);
             }
-          }, 1000);
+            
+            // Also set white balance and exposure if available
+            if (capabilities.whiteBalanceMode && capabilities.whiteBalanceMode.includes('continuous')) {
+              await videoTrack.applyConstraints({
+                advanced: [{ whiteBalanceMode: 'continuous' }]
+              });
+            }
+            
+            if (capabilities.exposureMode && capabilities.exposureMode.includes('continuous')) {
+              await videoTrack.applyConstraints({
+                advanced: [{ exposureMode: 'continuous' }]
+              });
+            }
+            
+          } catch (focusError) {
+            console.log('Advanced camera controls not supported:', focusError);
+          }
+          
+          // Start barcode detection loop
+          startBarcodeDetection();
           
         } catch (error) {
           console.error('Camera error:', error);
@@ -738,6 +736,40 @@
         }
       }
       
+      function startBarcodeDetection() {
+        // Use html5-qrcode to decode from video stream
+        const html5QrCode = new Html5Qrcode("cameraVideo");
+        
+        const config = {
+          fps: 15,
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.0,
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.QR_CODE,
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.CODE_39,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+            Html5QrcodeSupportedFormats.CODABAR,
+            Html5QrcodeSupportedFormats.ITF
+          ]
+        };
+        
+        html5QrCode.start(
+          { deviceId: { exact: stream.getVideoTracks()[0].getSettings().deviceId } },
+          config,
+          onScanSuccess,
+          onScanFailure
+        ).then(() => {
+          // Store scanner instance for cleanup
+          window.activeScanner = html5QrCode;
+        }).catch(err => {
+          console.log('Scanner start error:', err);
+        });
+      }
+      
       function onScanSuccess(decodedText, decodedResult) {
         stopScanner();
         
@@ -758,16 +790,24 @@
       }
       
       async function stopScanner() {
-        if (html5QrCode && isScanning) {
+        // Stop html5-qrcode scanner if active
+        if (window.activeScanner) {
           try {
-            await html5QrCode.stop();
-            await html5QrCode.clear();
+            await window.activeScanner.stop();
+            await window.activeScanner.clear();
           } catch (e) {
             console.log('Error stopping scanner:', e);
           }
-          html5QrCode = null;
-          isScanning = false;
+          window.activeScanner = null;
         }
+        
+        // Stop camera stream
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+          stream = null;
+        }
+        
+        isScanning = false;
         cameraOverlay.classList.remove('active');
         input.focus();
       }
