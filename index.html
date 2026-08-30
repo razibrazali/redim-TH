@@ -13,7 +13,6 @@
         --success: #10b981;
         --success-light: #d1fae5;
         --warning: #f59e0b;
-        --warning-light: #fef3c7;
         --danger: #ef4444;
         --gray-50: #f9fafb;
         --gray-100: #f3f4f6;
@@ -26,14 +25,14 @@
         --gray-800: #1f2937;
         --gray-900: #111827;
       }
-
+      
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
         -webkit-tap-highlight-color: transparent;
       }
-
+      
       body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -46,7 +45,7 @@
         padding: 16px;
         touch-action: manipulation;
       }
-
+      
       .container {
         background: white;
         border-radius: 20px;
@@ -57,7 +56,7 @@
         overflow: visible;
         position: relative;
       }
-
+      
       .header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 24px 24px 20px;
@@ -65,7 +64,7 @@
         position: relative;
         border-radius: 20px 20px 0 0;
       }
-
+      
       .header-icon {
         width: 60px;
         height: 60px;
@@ -78,37 +77,19 @@
         font-size: 30px;
         backdrop-filter: blur(10px);
       }
-
+      
       .header h1 {
         color: white;
         font-size: 24px;
         font-weight: 700;
         margin-bottom: 4px;
       }
-
+      
       .header p {
         color: rgba(255, 255, 255, 0.9);
         font-size: 14px;
       }
-
-      .debug-toggle {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        background: rgba(255, 255, 255, 0.18);
-        border: none;
-        color: white;
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        padding: 6px 10px;
-        border-radius: 8px;
-        cursor: pointer;
-        touch-action: manipulation;
-      }
-
-      .debug-toggle:active { background: rgba(255, 255, 255, 0.32); }
-
+      
       .progress-bar {
         height: 4px;
         background: rgba(255, 255, 255, 0.2);
@@ -116,18 +97,25 @@
         border-radius: 2px;
         overflow: hidden;
       }
-
+      
       .progress-fill {
         height: 100%;
         background: white;
         border-radius: 2px;
         transition: width 0.3s ease;
       }
-
-      .content { padding: 24px; overflow: visible; }
-
-      .step-indicator { display: flex; align-items: center; margin-bottom: 20px; }
-
+      
+      .content {
+        padding: 24px;
+        overflow: visible;
+      }
+      
+      .step-indicator {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      
       .step-number {
         width: 32px;
         height: 32px;
@@ -142,13 +130,23 @@
         margin-right: 12px;
         flex-shrink: 0;
       }
-
-      .step-number.completed { background: var(--success); }
-
-      .step-text { font-weight: 600; color: var(--gray-800); font-size: 16px; }
-
-      .form-group { margin-bottom: 20px; position: relative; z-index: 10; }
-
+      
+      .step-number.completed {
+        background: var(--success);
+      }
+      
+      .step-text {
+        font-weight: 600;
+        color: var(--gray-800);
+        font-size: 16px;
+      }
+      
+      .form-group {
+        margin-bottom: 20px;
+        position: relative;
+        z-index: 10;
+      }
+      
       .form-label {
         display: block;
         font-weight: 600;
@@ -158,9 +156,12 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
       }
-
-      .scanner-box { position: relative; z-index: 10; }
-
+      
+      .scanner-box {
+        position: relative;
+        z-index: 10;
+      }
+      
       .scanner-box input {
         width: 100%;
         padding: 16px 60px 16px 16px;
@@ -175,17 +176,23 @@
         font-weight: 500;
         background: var(--gray-50);
       }
-
+      
       .scanner-box input:focus {
         border-color: var(--primary);
         background: white;
         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
       }
-
-      .scanner-box input::placeholder { color: var(--gray-400); font-weight: normal; }
-
-      .scanner-box input.filled { border-color: var(--success); background: var(--success-light); }
-
+      
+      .scanner-box input::placeholder {
+        color: var(--gray-400);
+        font-weight: normal;
+      }
+      
+      .scanner-box input.filled {
+        border-color: var(--success);
+        background: var(--success-light);
+      }
+      
       .camera-icon-button {
         position: absolute;
         right: 8px;
@@ -205,14 +212,16 @@
         touch-action: manipulation;
         pointer-events: auto;
       }
-
+      
       .camera-icon-button:active {
         transform: translateY(-50%) scale(0.9);
         background: var(--primary);
       }
-
-      .camera-icon-button.success { background: var(--success-light); }
-
+      
+      .camera-icon-button.success {
+        background: var(--success-light);
+      }
+      
       .camera-options {
         display: none;
         position: absolute;
@@ -226,14 +235,23 @@
         z-index: 9999;
         overflow: hidden;
       }
-
-      .camera-options.active { display: block; animation: slideDown 0.2s ease-out; }
-
-      @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
+      
+      .camera-options.active {
+        display: block;
+        animation: slideDown 0.2s ease-out;
       }
-
+      
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
       .camera-option {
         width: 100%;
         padding: 14px 16px;
@@ -249,11 +267,19 @@
         transition: background 0.2s;
         touch-action: manipulation;
       }
-
-      .camera-option:hover { background: var(--gray-50); }
-      .camera-option:not(:last-child) { border-bottom: 1px solid var(--gray-100); }
-      .camera-option .option-icon { font-size: 20px; }
-
+      
+      .camera-option:hover {
+        background: var(--gray-50);
+      }
+      
+      .camera-option:not(:last-child) {
+        border-bottom: 1px solid var(--gray-100);
+      }
+      
+      .camera-option .option-icon {
+        font-size: 20px;
+      }
+      
       .clear-button-inline {
         display: none;
         position: absolute;
@@ -272,9 +298,11 @@
         justify-content: center;
         touch-action: manipulation;
       }
-
-      .clear-button-inline.active { display: flex; }
-
+      
+      .clear-button-inline.active {
+        display: flex;
+      }
+      
       .status-message {
         margin-top: 16px;
         padding: 12px 16px;
@@ -285,40 +313,39 @@
         display: none;
         animation: slideIn 0.3s ease-out;
       }
-
+      
       @keyframes slideIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
-
+      
       .status-message.success {
         display: block;
         background: var(--success-light);
         color: #065f46;
         border: 1px solid #a7f3d0;
       }
-
+      
       .status-message.error {
         display: block;
         background: #fee2e2;
         color: #991b1b;
         border: 1px solid #fecaca;
       }
-
+      
       .status-message.info {
         display: block;
         background: var(--primary-light);
         color: #1e40af;
         border: 1px solid #bfdbfe;
       }
-
-      .status-message.warning {
-        display: block;
-        background: var(--warning-light);
-        color: #92400e;
-        border: 1px solid #fde68a;
-      }
-
+      
       .helper-text {
         text-align: center;
         color: var(--gray-400);
@@ -326,16 +353,19 @@
         margin-top: 16px;
         line-height: 1.5;
       }
-
+      
       .step-2-container {
         display: none;
         margin-top: 20px;
         padding-top: 20px;
         border-top: 2px solid var(--gray-200);
       }
-
-      .step-2-container.active { display: block; animation: slideIn 0.5s ease-out; }
-
+      
+      .step-2-container.active {
+        display: block;
+        animation: slideIn 0.5s ease-out;
+      }
+      
       .photo-preview {
         width: 100%;
         max-height: 300px;
@@ -345,10 +375,17 @@
         display: none;
         background: var(--gray-100);
       }
-
-      .photo-preview.active { display: block; }
-      .photo-preview img { width: 100%; height: auto; object-fit: contain; }
-
+      
+      .photo-preview.active {
+        display: block;
+      }
+      
+      .photo-preview img {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+      }
+      
       .log-console {
         margin-top: 16px;
         padding: 12px;
@@ -360,14 +397,29 @@
         font-size: 12px;
         display: none;
       }
-
-      .log-console.active { display: block; }
-
-      .log-entry { color: #10b981; margin-bottom: 4px; word-break: break-all; }
-      .log-entry.error { color: #ef4444; }
-      .log-entry.info { color: #60a5fa; }
-      .log-entry.warning { color: #f59e0b; }
-
+      
+      .log-console.active {
+        display: block;
+      }
+      
+      .log-entry {
+        color: #10b981;
+        margin-bottom: 4px;
+        word-break: break-all;
+      }
+      
+      .log-entry.error {
+        color: #ef4444;
+      }
+      
+      .log-entry.info {
+        color: #60a5fa;
+      }
+      
+      .log-entry.warning {
+        color: #f59e0b;
+      }
+      
       .summary-container {
         display: none;
         margin-top: 20px;
@@ -376,14 +428,12 @@
         border-radius: 12px;
         border: 2px solid var(--success);
       }
-
-      .summary-container.active { display: block; animation: slideIn 0.5s ease-out; }
-
-      .summary-container.needs-weight {
-        background: var(--warning-light);
-        border-color: var(--warning);
+      
+      .summary-container.active {
+        display: block;
+        animation: slideIn 0.5s ease-out;
       }
-
+      
       .summary-title {
         text-align: center;
         font-size: 18px;
@@ -391,45 +441,27 @@
         color: #065f46;
         margin-bottom: 16px;
       }
-
-      .summary-container.needs-weight .summary-title { color: #92400e; }
-
+      
       .summary-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 12px;
         padding: 12px;
         background: white;
         border-radius: 8px;
         margin-bottom: 8px;
       }
-
-      .summary-label { font-weight: 600; color: var(--gray-600); flex-shrink: 0; }
-
+      
+      .summary-label {
+        font-weight: 600;
+        color: var(--gray-600);
+      }
+      
       .summary-value {
         font-weight: 700;
         color: var(--gray-900);
-        text-align: right;
-        word-break: break-all;
-        font-size: 13px;
       }
-
-      .manual-weight { display: none; margin-bottom: 8px; }
-      .manual-weight.active { display: block; }
-
-      .manual-weight input {
-        width: 100%;
-        padding: 14px 16px;
-        font-size: 16px;
-        border: 2px solid var(--warning);
-        border-radius: 10px;
-        outline: none;
-        margin-bottom: 8px;
-        -webkit-appearance: none;
-        appearance: none;
-      }
-
+      
       .camera-overlay {
         display: none;
         position: fixed;
@@ -441,9 +473,11 @@
         z-index: 99999;
         flex-direction: column;
       }
-
-      .camera-overlay.active { display: flex; }
-
+      
+      .camera-overlay.active {
+        display: flex;
+      }
+      
       .camera-header {
         padding: 20px;
         color: white;
@@ -456,7 +490,7 @@
         justify-content: center;
         gap: 8px;
       }
-
+      
       .camera-body {
         flex: 1;
         display: flex;
@@ -465,37 +499,48 @@
         position: relative;
         overflow: hidden;
       }
-
-      #reader { width: 100%; height: 100%; position: relative; }
-
+      
+      #reader {
+        width: 100%;
+        height: 100%;
+        position: relative;
+      }
+      
       #reader video {
         width: 100% !important;
         height: 100% !important;
         object-fit: cover !important;
       }
-
-      #photoVideo { width: 100%; height: 100%; object-fit: cover; }
-
+      
+      #photoVideo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
       .camera-guide {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 78%;
-        max-width: 320px;
-        height: 190px;
+        width: 250px;
+        height: 250px;
         border: 3px solid #10b981;
         border-radius: 20px;
         pointer-events: none;
-        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
         animation: pulse 2s infinite;
       }
-
+      
       @keyframes pulse {
-        0%, 100% { border-color: #10b981; }
-        50% { border-color: #34d399; }
+        0%, 100% {
+          border-color: #10b981;
+        }
+        50% {
+          border-color: #34d399;
+        }
       }
-
+      
       .focus-hint {
         position: absolute;
         bottom: 20px;
@@ -508,9 +553,8 @@
         padding: 8px 16px;
         border-radius: 20px;
         pointer-events: none;
-        text-align: center;
       }
-
+      
       .camera-footer {
         padding: 20px;
         background: rgba(0, 0, 0, 0.5);
@@ -518,7 +562,7 @@
         flex-direction: column;
         gap: 10px;
       }
-
+      
       .camera-cancel {
         width: 100%;
         padding: 14px;
@@ -535,9 +579,11 @@
         justify-content: center;
         gap: 8px;
       }
-
-      .camera-cancel:active { background: rgba(255, 255, 255, 0.2); }
-
+      
+      .camera-cancel:active {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      
       .camera-capture {
         width: 100%;
         padding: 14px;
@@ -554,18 +600,22 @@
         justify-content: center;
         gap: 8px;
       }
-
-      .camera-capture:active { background: #059669; }
-
+      
+      .camera-capture:active {
+        background: #059669;
+      }
+      
       .button-grid {
         display: grid;
         grid-template-columns: 1fr;
         gap: 12px;
         margin-bottom: 16px;
       }
-
-      .button-full { grid-column: 1; }
-
+      
+      .button-full {
+        grid-column: 1;
+      }
+      
       .action-button {
         padding: 14px;
         font-size: 14px;
@@ -582,45 +632,64 @@
         min-height: 48px;
         width: 100%;
       }
-
-      .action-button:active { transform: scale(0.97); }
-      .action-button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-      .action-button.primary { background: var(--primary); color: white; }
-      .action-button.primary:hover { background: var(--primary-dark); }
-      .action-button.danger { background: var(--danger); color: white; }
-      .action-button.success { background: var(--success); color: white; }
-      .action-button.warning { background: var(--warning); color: white; }
-      .action-button .icon { font-size: 20px; }
-
+      
+      .action-button:active {
+        transform: scale(0.97);
+      }
+      
+      .action-button.primary {
+        background: var(--primary);
+        color: white;
+      }
+      
+      .action-button.primary:hover {
+        background: var(--primary-dark);
+      }
+      
+      .action-button.danger {
+        background: var(--danger);
+        color: white;
+      }
+      
+      .action-button.success {
+        background: var(--success);
+        color: white;
+      }
+      
+      .action-button .icon {
+        font-size: 20px;
+      }
+      
       @media (max-width: 480px) {
-        .content { padding: 20px; }
+        .content {
+          padding: 20px;
+        }
       }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
-        <button class="debug-toggle" id="debugToggle" onclick="toggleDebug()">DEBUG</button>
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner 10:51</h1>
+        <h1>Parcel Scanner 11:00</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
         </div>
       </div>
-
+      
       <div class="content">
         <div class="step-indicator">
-          <div class="step-number" id="step1Number">1</div>
+          <div class="step-number completed" id="step1Number">✓</div>
           <div class="step-text">Enter Tracking Number</div>
         </div>
-
+        
         <div class="form-group">
           <label class="form-label" for="trackingNumber">Tracking Number</label>
           <div class="scanner-box">
-            <input
-              type="text"
-              id="trackingNumber"
+            <input 
+              type="text" 
+              id="trackingNumber" 
               placeholder="Scan or type tracking number..."
               autocomplete="off"
               inputmode="text"
@@ -644,24 +713,24 @@
             </div>
           </div>
         </div>
-
+        
         <div id="statusMessage" class="status-message"></div>
-
+        
         <div class="helper-text" id="helperText">
-          💡 USB scanner: just scan the code<br>
-          📱 Tablet: tap the camera icon
+          💡 USB scanner: Just scan the code<br>
+          📱 Phone: Tap camera icon to scan
         </div>
-
+        
         <div class="step-2-container" id="step2Container">
           <div class="step-indicator">
             <div class="step-number" id="step2Number">2</div>
             <div class="step-text">Capture Weight Scale Photo</div>
           </div>
-
+          
           <div class="photo-preview" id="photoPreview">
             <img id="capturedPhoto" alt="Captured parcel on scale">
           </div>
-
+          
           <div class="button-grid">
             <button class="action-button primary" onclick="openPhotoCamera()">
               <span class="icon">📸</span>
@@ -672,52 +741,39 @@
               Retake
             </button>
           </div>
-
+          
           <button class="action-button success button-full" onclick="submitParcel()" id="submitButton" style="display: none;">
             <span class="icon">✅</span>
-            <span id="submitLabel">Submit Parcel</span>
+            Submit Parcel
           </button>
-
+          
           <div id="photoStatus" class="status-message"></div>
-
+          
           <div class="helper-text">
             📸 Take a live photo of the parcel on the weight scale
           </div>
         </div>
-
+        
         <div class="log-console" id="logConsole"></div>
-
+        
         <div class="summary-container" id="summaryContainer">
-          <div class="summary-title" id="summaryTitle">✅ Parcel Submitted Successfully!</div>
-
+          <div class="summary-title">✅ Parcel Submitted Successfully!</div>
+          
           <div class="summary-item">
-            <span class="summary-label">Tracking:</span>
+            <span class="summary-label">Tracking Number:</span>
             <span class="summary-value" id="summaryTracking">-</span>
           </div>
-
+          
           <div class="summary-item">
             <span class="summary-label">Weight:</span>
             <span class="summary-value" id="summaryWeight">-</span>
           </div>
-
+          
           <div class="summary-item">
-            <span class="summary-label">Photo:</span>
+            <span class="summary-label">Photo Link:</span>
             <span class="summary-value" id="summaryLink">-</span>
           </div>
-
-          <div class="manual-weight" id="manualWeight">
-            <input
-              type="text"
-              id="manualWeightInput"
-              inputmode="decimal"
-              placeholder="Type the weight, e.g. 2.08"
-            />
-            <button class="action-button warning button-full" onclick="saveManualWeight()" id="manualWeightButton">
-              <span class="icon">⚖️</span>
-              <span id="manualWeightLabel">Save Weight</span>
-            </button>
-          </div>
-
+          
           <button class="action-button primary button-full" onclick="resetForm()" style="margin-top: 16px;">
             <span class="icon">📦</span>
             Scan Next Parcel
@@ -733,21 +789,21 @@
       <div class="camera-body" id="cameraBody">
         <div id="reader"></div>
         <div class="camera-guide"></div>
-        <div class="focus-hint">👆 Tap to focus · hold 20–25 cm away</div>
+        <div class="focus-hint">👆 Tap screen to focus</div>
       </div>
       <div class="camera-footer">
         <button class="camera-capture" onclick="captureFromLiveCamera()">
-          📸 Capture &amp; Decode
+          📸 Capture Photo
         </button>
         <button class="camera-cancel" onclick="stopScanner()">
           ✕ Cancel
         </button>
       </div>
     </div>
-
+    
     <div class="camera-overlay" id="photoCameraOverlay">
       <div class="camera-header">
-        📸 Position parcel and scale display in frame
+        📸 Position parcel and scale in frame
       </div>
       <div class="camera-body">
         <video id="photoVideo" autoplay playsinline muted></video>
@@ -763,85 +819,61 @@
     </div>
 
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-
+    
     <script>
-      /* ===================== CONFIG ===================== */
-
-      const GOOGLE_SCRIPT_URL = 'PASTE_YOUR_EXEC_URL_HERE';
-      const CLIENT_TOKEN      = 'PASTE_THE_SAME_SHARED_TOKEN_HERE';
-
-      const PHOTO_QUALITY  = 0.8;    // JPEG quality for the scale photo
-      const PHOTO_MAX_EDGE = 1600;   // downscale before upload
-      const SUBMIT_TIMEOUT = 120000; // ms — Apps Script + OCR can be slow
-
-      /* ===================== ELEMENTS ===================== */
-
-      const input              = document.getElementById('trackingNumber');
-      const statusMessage      = document.getElementById('statusMessage');
-      const cameraOverlay      = document.getElementById('cameraOverlay');
-      const cameraBody         = document.getElementById('cameraBody');
-      const step2Container     = document.getElementById('step2Container');
-      const progressFill       = document.getElementById('progressFill');
-      const step1Number        = document.getElementById('step1Number');
-      const step2Number        = document.getElementById('step2Number');
-      const photoPreview       = document.getElementById('photoPreview');
-      const capturedPhoto      = document.getElementById('capturedPhoto');
+      const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHtGLD7MtxWq3JiZ2M2uUkjb0viSckEqHhV5-T-J-ppAcmbT0i0dzv1z3OdJWkcLNNtQ/exec';
+      
+      const input = document.getElementById('trackingNumber');
+      const statusMessage = document.getElementById('statusMessage');
+      const cameraOverlay = document.getElementById('cameraOverlay');
+      const cameraBody = document.getElementById('cameraBody');
+      const step2Container = document.getElementById('step2Container');
+      const progressFill = document.getElementById('progressFill');
+      const step1Number = document.getElementById('step1Number');
+      const step2Number = document.getElementById('step2Number');
+      const photoPreview = document.getElementById('photoPreview');
+      const capturedPhoto = document.getElementById('capturedPhoto');
       const photoCameraOverlay = document.getElementById('photoCameraOverlay');
-      const photoVideo         = document.getElementById('photoVideo');
-      const photoStatus        = document.getElementById('photoStatus');
-      const retakeButton       = document.getElementById('retakeButton');
-      const submitButton       = document.getElementById('submitButton');
-      const submitLabel        = document.getElementById('submitLabel');
-      const summaryContainer   = document.getElementById('summaryContainer');
-      const summaryTitle       = document.getElementById('summaryTitle');
-      const summaryTracking    = document.getElementById('summaryTracking');
-      const summaryWeight      = document.getElementById('summaryWeight');
-      const summaryLink        = document.getElementById('summaryLink');
-      const logConsole         = document.getElementById('logConsole');
-      const cameraIconButton   = document.getElementById('cameraIconButton');
-      const cameraOptions      = document.getElementById('cameraOptions');
-      const clearButtonInline  = document.getElementById('clearButtonInline');
-      const manualWeight       = document.getElementById('manualWeight');
-      const manualWeightInput  = document.getElementById('manualWeightInput');
-      const manualWeightButton = document.getElementById('manualWeightButton');
-      const manualWeightLabel  = document.getElementById('manualWeightLabel');
-
+      const photoVideo = document.getElementById('photoVideo');
+      const photoStatus = document.getElementById('photoStatus');
+      const retakeButton = document.getElementById('retakeButton');
+      const submitButton = document.getElementById('submitButton');
+      const summaryContainer = document.getElementById('summaryContainer');
+      const summaryTracking = document.getElementById('summaryTracking');
+      const summaryWeight = document.getElementById('summaryWeight');
+      const summaryLink = document.getElementById('summaryLink');
+      const logConsole = document.getElementById('logConsole');
+      const cameraIconButton = document.getElementById('cameraIconButton');
+      const cameraOptions = document.getElementById('cameraOptions');
+      const clearButtonInline = document.getElementById('clearButtonInline');
+      
       let html5QrCode = null;
       let isScanning = false;
+      let lastScannedValue = '';
+      let lastScanTime = 0;
       let photoStream = null;
       let capturedPhotoData = null;
-      let isSubmitting = false;
-      let confirmedTracking = '';
-      let typingTimer = null;
+      
       let audioContext = null;
-      let debugVisible = false;
-
-      /* ===================== LOGGING ===================== */
-
-      function addLog(message, type) {
+      
+      function addLog(message, type = 'info') {
         console.log(message);
-        const entry = document.createElement('div');
-        entry.className = 'log-entry ' + (type || 'info');
-        entry.textContent = new Date().toLocaleTimeString() + ' - ' + message;
-        logConsole.appendChild(entry);
+        logConsole.classList.add('active');
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-entry ' + type;
+        logEntry.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+        logConsole.appendChild(logEntry);
         logConsole.scrollTop = logConsole.scrollHeight;
       }
-
-      function toggleDebug() {
-        debugVisible = !debugVisible;
-        logConsole.classList.toggle('active', debugVisible);
-        if (debugVisible) logConsole.scrollTop = logConsole.scrollHeight;
-      }
-
-      /* ===================== FEEDBACK ===================== */
-
+      
       function playBeepSound() {
         try {
           if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
           }
-          if (audioContext.state === 'suspended') audioContext.resume();
-
+          if (audioContext.state === 'suspended') {
+            audioContext.resume();
+          }
           const oscillator = audioContext.createOscillator();
           const gainNode = audioContext.createGain();
           oscillator.connect(gainNode);
@@ -850,606 +882,455 @@
           oscillator.type = 'square';
           gainNode.gain.value = 0.3;
           oscillator.start();
-          setTimeout(function () { oscillator.stop(); }, 100);
+          setTimeout(function() { oscillator.stop(); }, 100);
         } catch (e) {
-          addLog('Audio not available: ' + (e.message || e), 'warning');
+          addLog('Audio not available: ' + e.message, 'error');
         }
       }
-
-      function buzz(pattern) {
-        if (navigator.vibrate) navigator.vibrate(pattern);
-      }
-
-      function showStatus(message, type) {
-        statusMessage.textContent = message;
-        statusMessage.className = 'status-message ' + type;
-        statusMessage.style.display = 'block';
-      }
-
-      function hideStatus() { statusMessage.style.display = 'none'; }
-
-      function showPhotoStatus(message, type) {
-        photoStatus.textContent = message;
-        photoStatus.className = 'status-message ' + type;
-        photoStatus.style.display = 'block';
-      }
-
-      function hidePhotoStatus() { photoStatus.style.display = 'none'; }
-
-      /* ===================== STEP 1: TRACKING NUMBER ===================== */
-
+      
       function toggleCameraOptions(event) {
         event.stopPropagation();
         cameraOptions.classList.toggle('active');
       }
-
-      document.addEventListener('click', function (e) {
+      
+      document.addEventListener('click', function(e) {
         if (!cameraOptions.contains(e.target) && e.target !== cameraIconButton) {
           cameraOptions.classList.remove('active');
         }
       });
-
+      
       input.focus();
-
-      // Hardware scanner and manual entry both end with Enter.
-      input.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          clearTimeout(typingTimer);
-          commitTracking('keyboard');
+      
+      input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && this.value.trim() !== '') {
+          const now = Date.now();
+          if (this.value.trim() === lastScannedValue && now - lastScanTime < 500) return;
+          lastScannedValue = this.value.trim();
+          lastScanTime = now;
+          addLog('Tracking number entered: ' + this.value.trim(), 'info');
+          playBeepSound();
+          markAsFilled();
         }
       });
-
-      input.addEventListener('paste', function () {
-        setTimeout(function () { commitTracking('paste'); }, 80);
+      
+      input.addEventListener('paste', function(e) {
+        setTimeout(function() {
+          if (input.value.trim() !== '') {
+            addLog('Tracking number pasted: ' + input.value.trim(), 'info');
+            playBeepSound();
+            markAsFilled();
+          }
+        }, 100);
       });
-
-      // Typing by hand: settle for a moment before confirming, so we don't
-      // beep and open step 2 on every single character.
-      input.addEventListener('input', function () {
-        clearTimeout(typingTimer);
-
-        if (this.value.trim() === '') {
-          resetTrackingState();
-          return;
+      
+      input.addEventListener('input', function() {
+        if (this.value.trim() !== '') {
+          markAsFilled();
+        } else {
+          removeFilled();
         }
-
-        clearButtonInline.classList.add('active');
-        typingTimer = setTimeout(function () { commitTracking('typed'); }, 900);
       });
-
-      input.addEventListener('blur', function () {
-        clearTimeout(typingTimer);
-        if (this.value.trim() !== '') commitTracking('blur');
+      
+      input.addEventListener('blur', function() {
+        if (this.value.trim() !== '') markAsFilled();
       });
-
-      function commitTracking(source) {
-        const value = input.value.trim();
-        if (!value) return;
-        if (value === confirmedTracking) return;   // already handled
-
-        confirmedTracking = value;
-
+      
+      function markAsFilled() {
         input.classList.add('filled');
         cameraIconButton.classList.add('success');
         clearButtonInline.classList.add('active');
-
-        addLog('Tracking captured (' + source + '): ' + value, 'info');
-        playBeepSound();
-        buzz(100);
-
-        showStatus('✅ Tracking number captured', 'success');
-        setTimeout(hideStatus, 2000);
-
+        showStatus('✅ Tracking number captured successfully!', 'success');
         showStep2();
+        if (navigator.vibrate) navigator.vibrate(100);
+        setTimeout(function() { hideStatus(); }, 2000);
       }
-
-      function resetTrackingState() {
-        confirmedTracking = '';
+      
+      function removeFilled() {
         input.classList.remove('filled');
         cameraIconButton.classList.remove('success');
         clearButtonInline.classList.remove('active');
         hideStep2();
       }
-
+      
       function clearTrackingNumber() {
-        clearTimeout(typingTimer);
         input.value = '';
-        resetTrackingState();
-        hideStatus();
+        removeFilled();
         input.focus();
-        addLog('Tracking number cleared', 'warning');
+        hideStatus();
       }
-
+      
       function showStep2() {
         step2Container.classList.add('active');
         progressFill.style.width = '66.66%';
         step1Number.textContent = '✓';
         step1Number.classList.add('completed');
+        step2Number.textContent = '2';
       }
-
+      
       function hideStep2() {
         step2Container.classList.remove('active');
         progressFill.style.width = '33.33%';
         step1Number.textContent = '1';
         step1Number.classList.remove('completed');
         step2Number.textContent = '2';
-        step2Number.classList.remove('completed');
-
         photoPreview.classList.remove('active');
         capturedPhoto.src = '';
         retakeButton.style.display = 'none';
         submitButton.style.display = 'none';
         capturedPhotoData = null;
-        hidePhotoStatus();
       }
-
-      /* ===================== BARCODE SCANNING ===================== */
-
-      function newQrInstance() {
-        const readerEl = document.getElementById('reader');
-        readerEl.innerHTML = '';
-
-        return new Html5Qrcode('reader', {
-          verbose: false,
-          experimentalFeatures: { useBarCodeDetectorIfSupported: true },
-          formatsToSupport: [
-            Html5QrcodeSupportedFormats.QR_CODE,
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.EAN_8,
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.CODE_39,
-            Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.UPC_E,
-            Html5QrcodeSupportedFormats.CODABAR,
-            Html5QrcodeSupportedFormats.ITF
-          ]
-        });
+      
+      function showStatus(message, type) {
+        statusMessage.textContent = message;
+        statusMessage.className = 'status-message ' + type;
+        statusMessage.style.display = 'block';
       }
-
-      // Wide box so 1D barcodes fit; a square box clips CODE_128 labels.
-      function computeQrBox(viewfinderWidth, viewfinderHeight) {
-        const w = Math.floor(viewfinderWidth * 0.85);
-        const h = Math.floor(Math.min(viewfinderHeight * 0.6, w * 0.6));
-        return { width: w, height: Math.max(h, 120) };
+      
+      function hideStatus() {
+        statusMessage.style.display = 'none';
       }
-
+      
+      function showPhotoStatus(message, type) {
+        photoStatus.textContent = message;
+        photoStatus.className = 'status-message ' + type;
+        photoStatus.style.display = 'block';
+      }
+      
+      function hidePhotoStatus() {
+        photoStatus.style.display = 'none';
+      }
+      
       async function startScanner() {
         cameraOptions.classList.remove('active');
-
+        
         if (isScanning) {
           await stopScanner();
           return;
         }
-
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          addLog('getUserMedia unavailable', 'error');
-          alert('This browser cannot open the camera.\n\n' +
-                'Check the address starts with https:// , then try Chrome or ' +
-                'Huawei Browser. You can still use "From Gallery".');
-          return;
-        }
-
-        addLog('Opening barcode scanner...', 'info');
-        cameraOverlay.classList.add('active');
-
-        const sources = [];
+        
         try {
-          const cams = await Html5Qrcode.getCameras();
-          addLog('Cameras detected: ' + cams.length, 'info');
-          cams.forEach(function (c) { addLog('  - ' + (c.label || '(no label)'), 'info'); });
-
-          const back = cams.find(function (c) {
-            return /back|rear|environment|world|后|後|環境/i.test(c.label || '');
-          });
-          if (back) sources.push(back.id);
-          cams.forEach(function (c) {
-            if (sources.indexOf(c.id) === -1) sources.push(c.id);
-          });
-        } catch (e) {
-          addLog('getCameras failed: ' + (e.message || e), 'warning');
-        }
-        sources.push({ facingMode: 'environment' });
-        sources.push({ facingMode: 'user' });
-
-        // No aspectRatio — it causes OverconstrainedError on many tablets.
-        const baseConfig = {
-          fps: 12,
-          qrbox: computeQrBox,
-          disableFlip: false,
-          videoConstraints: {
-            facingMode: 'environment',
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            advanced: [{ focusMode: 'continuous' }]
+          addLog('Opening barcode scanner...', 'info');
+          cameraOverlay.classList.add('active');
+          
+          const readerElement = document.getElementById('reader');
+          readerElement.innerHTML = '';
+          
+          html5QrCode = new Html5Qrcode("reader");
+          
+          const config = {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            useBarCodeDetectorIfSupported: true,
+            formatsToSupport: [
+              Html5QrcodeSupportedFormats.QR_CODE,
+              Html5QrcodeSupportedFormats.EAN_13,
+              Html5QrcodeSupportedFormats.EAN_8,
+              Html5QrcodeSupportedFormats.CODE_128,
+              Html5QrcodeSupportedFormats.CODE_39,
+              Html5QrcodeSupportedFormats.UPC_A,
+              Html5QrcodeSupportedFormats.UPC_E,
+              Html5QrcodeSupportedFormats.CODABAR,
+              Html5QrcodeSupportedFormats.ITF
+            ]
+          };
+          
+          addLog('Enumerating cameras...', 'info');
+          const cameras = await Html5Qrcode.getCameras();
+          
+          if (!cameras || cameras.length === 0) {
+            throw new Error('No cameras found. Please ensure page is served over HTTPS.');
           }
-        };
-
-        let started = false;
-        let lastError = null;
-
-        for (const source of sources) {
-          try {
-            html5QrCode = newQrInstance();
-
-            const cfg = (typeof source === 'string')
-              ? Object.assign({}, baseConfig, {
-                  videoConstraints: {
-                    deviceId: { exact: source },
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
-                    advanced: [{ focusMode: 'continuous' }]
-                  }
-                })
-              : baseConfig;
-
-            await html5QrCode.start(source, cfg, onScanSuccess, onScanFailure);
-            started = true;
-            addLog('Scanner started with ' + JSON.stringify(source), 'info');
-            break;
-          } catch (err) {
-            lastError = err;
-            addLog('Camera attempt failed: ' + (err && err.message ? err.message : err), 'warning');
-            html5QrCode = null;   // never call stop() on an instance that never started
+          
+          addLog('Found ' + cameras.length + ' camera(s):', 'info');
+          cameras.forEach((cam, index) => {
+            addLog('  Camera ' + index + ': ' + cam.id + ' - ' + (cam.label || 'No label'), 'info');
+          });
+          
+          let selectedCamera = cameras[0];
+          for (const cam of cameras) {
+            const label = (cam.label || '').toLowerCase();
+            if (label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('后') || label.includes('背面')) {
+              selectedCamera = cam;
+              break;
+            }
           }
-        }
-
-        if (!started) {
+          
+          addLog('Selected camera: ' + (selectedCamera.label || selectedCamera.id), 'info');
+          
+          await html5QrCode.start(
+            selectedCamera.id,
+            config,
+            onScanSuccess,
+            onScanFailure
+          );
+          
+          isScanning = true;
+          addLog('Scanner started successfully', 'info');
+          
+        } catch (error) {
+          console.error('Camera error:', error);
+          const errMsg = error && error.message ? error.message : String(error);
+          addLog('Scanner error: ' + errMsg, 'error');
           cameraOverlay.classList.remove('active');
-          const msg = (lastError && lastError.message) ? lastError.message : String(lastError);
-          let hint = 'Unable to open the camera. ';
-          if (/NotAllowed|permission/i.test(msg)) {
-            hint += 'Permission denied — allow camera access for this site in browser settings.';
-          } else if (/NotFound/i.test(msg)) {
-            hint += 'No camera found on this device.';
-          } else if (/NotReadable|TrackStart/i.test(msg)) {
-            hint += 'The camera is in use by another app. Close it and try again.';
+          
+          let errorMessage = 'Unable to access camera. ';
+          if (errMsg.includes('permission') || errMsg.includes('NotAllowed')) {
+            errorMessage += 'Camera permission denied.';
+          } else if (errMsg.includes('NotFound') || errMsg.includes('No cameras')) {
+            errorMessage += 'No camera found.';
           } else {
-            hint += msg;
+            errorMessage += errMsg;
           }
-          alert(hint + '\n\nTip: use "From Gallery" — take a photo with the Camera app, then pick it.');
+          
+          alert(errorMessage);
           input.focus();
-          return;
         }
-
-        isScanning = true;
       }
-
-      function onScanSuccess(decodedText) {
+      
+      function onScanSuccess(decodedText, decodedResult) {
         addLog('Code detected: ' + decodedText, 'info');
         stopScanner();
         playBeepSound();
         input.value = decodedText;
-        commitTracking('live camera');
-        buzz([100, 50, 100]);
+        markAsFilled();
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
       }
-
-      function onScanFailure() { /* fires constantly between frames — ignore */ }
-
+      
+      function onScanFailure(error) {
+        // Silent failure
+      }
+      
+      function captureFromLiveCamera() {
+        try {
+          addLog('Capturing photo from live camera...', 'info');
+          
+          const videoElement = document.querySelector('#reader video');
+          
+          if (!videoElement || !videoElement.videoWidth) {
+            addLog('No video stream available', 'error');
+            alert('Camera is not ready. Please wait a moment.');
+            return;
+          }
+          
+          const canvas = document.createElement('canvas');
+          canvas.width = videoElement.videoWidth;
+          canvas.height = videoElement.videoHeight;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+          
+          const photoDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          addLog('Photo captured. Size: ' + Math.round(photoDataUrl.length / 1024) + ' KB', 'info');
+          
+          stopScanner();
+          processCapturedCode(photoDataUrl);
+          
+        } catch (error) {
+          const errMsg = error && error.message ? error.message : String(error);
+          addLog('Capture error: ' + errMsg, 'error');
+          alert('Error capturing photo. Please try again.');
+        }
+      }
+      
+      function processCapturedCode(imageDataUrl) {
+        addLog('Processing captured image with html5-qrcode...', 'info');
+        showStatus('Decoding code from captured photo...', 'info');
+        
+        fetch(imageDataUrl)
+          .then(res => res.blob())
+          .then(blob => {
+            const file = new File([blob], 'captured_photo.jpg', { type: 'image/jpeg' });
+            
+            const tempContainer = document.createElement('div');
+            tempContainer.id = 'tempScanner';
+            tempContainer.style.display = 'none';
+            document.body.appendChild(tempContainer);
+            
+            const tempScanner = new Html5Qrcode("tempScanner");
+            
+            tempScanner.scanFile(file, true)
+              .then(decodedText => {
+                tempScanner.clear();
+                tempContainer.remove();
+                
+                addLog('Code found in captured photo: ' + decodedText, 'info');
+                playBeepSound();
+                
+                input.value = decodedText;
+                markAsFilled();
+                
+                if (navigator.vibrate) {
+                  navigator.vibrate([100, 50, 100]);
+                }
+                
+                hideStatus();
+              })
+              .catch(err => {
+                console.error('Scan error:', err);
+                tempScanner.clear();
+                tempContainer.remove();
+                
+                addLog('No code found in photo', 'error');
+                showStatus('No code found in photo. Please try again.', 'error');
+                setTimeout(function() {
+                  hideStatus();
+                }, 3000);
+              });
+          })
+          .catch(err => {
+            const errMsg = err && err.message ? err.message : String(err);
+            addLog('Error converting photo: ' + errMsg, 'error');
+            showStatus('Error processing photo. Please try again.', 'error');
+            setTimeout(function() {
+              hideStatus();
+            }, 3000);
+          });
+      }
+      
       async function stopScanner() {
         if (html5QrCode && isScanning) {
           try {
             await html5QrCode.stop();
             await html5QrCode.clear();
-            addLog('Scanner stopped', 'info');
           } catch (e) {
-            addLog('Error stopping scanner: ' + (e.message || e), 'warning');
+            // Ignore
           }
+          html5QrCode = null;
+          isScanning = false;
         }
-        html5QrCode = null;
-        isScanning = false;
         cameraOverlay.classList.remove('active');
         input.focus();
       }
-
-      cameraBody.addEventListener('click', async function () {
+      
+      cameraBody.addEventListener('click', async function() {
         try {
           const videoElement = document.querySelector('#reader video');
-          if (!videoElement || !videoElement.srcObject) return;
-
-          const track = videoElement.srcObject.getVideoTracks()[0];
-          if (!track || !track.getCapabilities) return;
-
-          const capabilities = track.getCapabilities();
-          if (!capabilities.focusMode) return;
-
-          const modes = capabilities.focusMode;
-          if (modes.indexOf('continuous') !== -1) {
-            await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-          } else if (modes.indexOf('auto') !== -1) {
-            await track.applyConstraints({ advanced: [{ focusMode: 'auto' }] });
+          if (videoElement && videoElement.srcObject) {
+            const videoTrack = videoElement.srcObject.getVideoTracks()[0];
+            if (videoTrack && videoTrack.getCapabilities) {
+              const capabilities = videoTrack.getCapabilities();
+              if (capabilities.focusMode) {
+                const focusModes = capabilities.focusMode;
+                if (focusModes.includes('continuous')) {
+                  await videoTrack.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                } else if (focusModes.includes('auto')) {
+                  await videoTrack.applyConstraints({ advanced: [{ focusMode: 'auto' }] });
+                }
+                const guide = document.querySelector('.camera-guide');
+                guide.style.borderColor = '#ffffff';
+                setTimeout(() => { guide.style.borderColor = '#10b981'; }, 300);
+              }
+            }
           }
-
-          const guide = document.querySelector('.camera-guide');
-          guide.style.transition = 'border-color 0.3s';
-          guide.style.borderColor = '#ffffff';
-          setTimeout(function () { guide.style.borderColor = '#10b981'; }, 300);
         } catch (error) {
           console.log('Manual focus error:', error);
         }
       });
-
-      function captureFromLiveCamera() {
-        try {
-          addLog('Capturing still from live camera...', 'info');
-
-          const videoElement = document.querySelector('#reader video');
-          if (!videoElement || !videoElement.srcObject || !videoElement.videoWidth) {
-            addLog('No video stream available', 'error');
-            alert('Camera is not ready yet. Wait a second and try again.');
-            return;
-          }
-
-          const canvas = document.createElement('canvas');
-          canvas.width = videoElement.videoWidth;
-          canvas.height = videoElement.videoHeight;
-          canvas.getContext('2d').drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-          addLog('Still captured: ' + canvas.width + 'x' + canvas.height, 'info');
-
-          stopScanner();
-          decodeFromImage(dataUrl, 'captured photo');
-        } catch (error) {
-          const msg = (error && error.message) ? error.message : String(error);
-          addLog('Capture error: ' + msg, 'error');
-          alert('Error capturing photo: ' + msg);
-        }
-      }
-
+      
       function scanFromFile() {
         cameraOptions.classList.remove('active');
-
+        
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
         fileInput.accept = 'image/*';
-
-        fileInput.onchange = function (e) {
-          const file = e.target.files && e.target.files[0];
-          if (!file) return;
-
-          addLog('File selected: ' + file.name, 'info');
-          const reader = new FileReader();
-          reader.onload = function () { decodeFromImage(reader.result, 'gallery image'); };
-          reader.onerror = function () {
-            addLog('Could not read the selected file', 'error');
-            showStatus('Could not read that image. Try another one.', 'error');
-            setTimeout(hideStatus, 3000);
-          };
-          reader.readAsDataURL(file);
+        
+        fileInput.onchange = function(e) {
+          const file = e.target.files[0];
+          if (file) {
+            addLog('File selected: ' + file.name, 'info');
+            showStatus('Decoding code...', 'info');
+            
+            const tempContainer = document.createElement('div');
+            tempContainer.id = 'tempScanner';
+            tempContainer.style.display = 'none';
+            document.body.appendChild(tempContainer);
+            
+            const tempScanner = new Html5Qrcode("tempScanner");
+            
+            tempScanner.scanFile(file, true)
+              .then(decodedText => {
+                tempScanner.clear();
+                tempContainer.remove();
+                
+                addLog('Code found: ' + decodedText, 'info');
+                playBeepSound();
+                
+                input.value = decodedText;
+                markAsFilled();
+                
+                if (navigator.vibrate) {
+                  navigator.vibrate([100, 50, 100]);
+                }
+                
+                hideStatus();
+              })
+              .catch(err => {
+                console.error('Scan error:', err);
+                tempScanner.clear();
+                tempContainer.remove();
+                
+                addLog('No code found in image', 'error');
+                showStatus('No code found in image. Please try again.', 'error');
+                setTimeout(function() {
+                  hideStatus();
+                }, 3000);
+              });
+          }
         };
-
+        
         fileInput.click();
       }
-
-      /* ===================== MULTI-PASS DECODE ===================== */
-      /* Fixed-focus tablet cameras produce soft images. Several enhanced
-         variants recover codes that a single pass would miss.            */
-
-      function ensureTempScannerEl() {
-        let el = document.getElementById('tempScanner');
-        if (!el) {
-          el = document.createElement('div');
-          el.id = 'tempScanner';
-          el.style.display = 'none';
-          document.body.appendChild(el);   // MUST exist before `new Html5Qrcode`
-        }
-        return el;
-      }
-
-      function loadImage(dataUrl) {
-        return new Promise(function (resolve, reject) {
-          const img = new Image();
-          img.onload = function () { resolve(img); };
-          img.onerror = function () { reject(new Error('Image could not be loaded')); };
-          img.src = dataUrl;
-        });
-      }
-
-      function canvasToFile(canvas, name) {
-        return new Promise(function (resolve, reject) {
-          canvas.toBlob(function (blob) {
-            if (blob) resolve(new File([blob], name, { type: 'image/png' }));
-            else reject(new Error('Canvas conversion failed'));
-          }, 'image/png');
-        });
-      }
-
-      function drawScaled(img, maxDim) {
-        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-        const c = document.createElement('canvas');
-        c.width = Math.round(img.width * scale);
-        c.height = Math.round(img.height * scale);
-        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-        return c;
-      }
-
-      function drawCrop(img, frac, outDim) {
-        const sw = img.width * frac;
-        const sh = img.height * frac;
-        const sx = (img.width - sw) / 2;
-        const sy = (img.height - sh) / 2;
-        const scale = outDim / Math.max(sw, sh);
-        const c = document.createElement('canvas');
-        c.width = Math.round(sw * scale);
-        c.height = Math.round(sh * scale);
-        c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
-        return c;
-      }
-
-      function enhance(canvas, factor) {
-        const ctx = canvas.getContext('2d');
-        const d = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const p = d.data;
-        for (let i = 0; i < p.length; i += 4) {
-          const g = 0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2];
-          let v = (g - 128) * factor + 128;
-          v = v < 0 ? 0 : (v > 255 ? 255 : v);
-          p[i] = p[i + 1] = p[i + 2] = v;
-        }
-        ctx.putImageData(d, 0, 0);
-        return canvas;
-      }
-
-      function binarise(canvas) {
-        const ctx = canvas.getContext('2d');
-        const d = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const p = d.data;
-        let sum = 0;
-        for (let i = 0; i < p.length; i += 4) {
-          sum += 0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2];
-        }
-        const mean = sum / (p.length / 4);
-        for (let i = 0; i < p.length; i += 4) {
-          const g = 0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2];
-          const v = g > mean ? 255 : 0;
-          p[i] = p[i + 1] = p[i + 2] = v;
-        }
-        ctx.putImageData(d, 0, 0);
-        return canvas;
-      }
-
-      async function decodeFromImage(dataUrl, sourceLabel) {
-        showStatus('Decoding code from ' + sourceLabel + '...', 'info');
-        addLog('Decoding ' + sourceLabel + ' (multi-pass)...', 'info');
-
-        ensureTempScannerEl();
-
-        let img;
-        try {
-          img = await loadImage(dataUrl);
-        } catch (e) {
-          addLog('Load failed: ' + (e.message || e), 'error');
-          showStatus('Could not read that image.', 'error');
-          setTimeout(hideStatus, 3000);
-          return;
-        }
-
-        const passes = [
-          { name: 'original',      make: function () { return drawScaled(img, 1600); } },
-          { name: 'centre-crop',   make: function () { return drawCrop(img, 0.7, 1600); } },
-          { name: 'contrast',      make: function () { return enhance(drawScaled(img, 1600), 1.7); } },
-          { name: 'threshold',     make: function () { return binarise(drawScaled(img, 1600)); } },
-          { name: 'crop+contrast', make: function () { return enhance(drawCrop(img, 0.7, 1600), 1.7); } }
-        ];
-
-        for (const pass of passes) {
-          let scanner = null;
-          try {
-            const file = await canvasToFile(pass.make(), 'pass.png');
-            scanner = new Html5Qrcode('tempScanner');
-            const decodedText = await scanner.scanFile(file, false);
-            try { await scanner.clear(); } catch (ignore) {}
-
-            addLog('Code found on pass "' + pass.name + '": ' + decodedText, 'info');
-            hideStatus();
-            playBeepSound();
-            input.value = decodedText;
-            commitTracking(sourceLabel);
-            buzz([100, 50, 100]);
-            return;
-          } catch (err) {
-            addLog('Pass "' + pass.name + '" — no code', 'warning');
-            if (scanner) { try { await scanner.clear(); } catch (ignore) {} }
-          }
-        }
-
-        addLog('No code found after ' + passes.length + ' passes', 'error');
-        showStatus('No code found. Hold the tablet further back, keep the label flat and well lit, then try again.', 'error');
-        setTimeout(hideStatus, 5000);
-      }
-
-      /* ===================== STEP 2: SCALE PHOTO ===================== */
-
+      
       async function openPhotoCamera() {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          alert('This browser cannot open the camera. Make sure the page is loaded over https://');
-          return;
-        }
-
         try {
-          addLog('Opening photo camera...', 'info');
           photoCameraOverlay.classList.add('active');
-
-          photoStream = await navigator.mediaDevices.getUserMedia({
+          const constraints = {
             video: {
               facingMode: { ideal: 'environment' },
               width: { ideal: 1920 },
-              height: { ideal: 1080 },
-              advanced: [{ focusMode: 'continuous' }]
+              height: { ideal: 1080 }
             },
             audio: false
-          });
-
+          };
+          photoStream = await navigator.mediaDevices.getUserMedia(constraints);
           photoVideo.srcObject = photoStream;
           await photoVideo.play();
-          addLog('Photo camera ready', 'info');
         } catch (error) {
-          console.error('Photo camera error:', error);
           photoCameraOverlay.classList.remove('active');
-
-          const msg = (error && error.message) ? error.message : String(error);
-          let hint = 'Unable to access camera. ';
-          if (/NotAllowed|permission/i.test(msg)) {
-            hint += 'Permission denied. Allow camera access in your browser settings.';
-          } else if (/NotFound/i.test(msg)) {
-            hint += 'No camera found on this device.';
-          } else {
-            hint += msg;
-          }
-          alert(hint);
+          alert('Unable to access camera: ' + (error.message || error));
         }
       }
-
+      
       function capturePhoto() {
-        if (!photoStream || !photoVideo.videoWidth) return;
-
-        // Downscale before stamping so the upload stays small.
-        const scale = Math.min(1, PHOTO_MAX_EDGE / Math.max(photoVideo.videoWidth, photoVideo.videoHeight));
+        if (!photoStream) return;
         const canvas = document.createElement('canvas');
-        canvas.width = Math.round(photoVideo.videoWidth * scale);
-        canvas.height = Math.round(photoVideo.videoHeight * scale);
-
+        const video = photoVideo;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(photoVideo, 0, 0, canvas.width, canvas.height);
-
-        // Stamp sized relative to the frame, not hardcoded.
-        const label = confirmedTracking + '  ·  ' + new Date().toLocaleString();
-        const fontSize = Math.max(16, Math.round(canvas.width * 0.030));
-        const pad = Math.round(fontSize * 0.5);
-
-        ctx.font = 'bold ' + fontSize + 'px Arial';
-        ctx.textBaseline = 'middle';
-
-        const boxW = Math.min(canvas.width - pad * 2, ctx.measureText(label).width + pad * 2);
-        const boxH = fontSize + pad * 2;
-        const boxY = canvas.height - boxH - pad;
-
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-        ctx.fillRect(pad, boxY, boxW, boxH);
-        ctx.fillStyle = '#000000';
-        ctx.fillText(label, pad * 2, boxY + boxH / 2);
-
-        capturedPhotoData = canvas.toDataURL('image/jpeg', PHOTO_QUALITY);
-        capturedPhoto.src = capturedPhotoData;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const timestamp = new Date();
+        const timestampStr = timestamp.toLocaleString();
+        ctx.font = 'bold 30px Arial';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fillRect(10, canvas.height - 50, 300, 40);
+        ctx.fillStyle = 'black';
+        ctx.fillText(timestampStr, 20, canvas.height - 20);
+        const photoDataUrl = canvas.toDataURL('image/png');
+        capturedPhoto.src = photoDataUrl;
+        capturedPhotoData = photoDataUrl;
         photoPreview.classList.add('active');
-        retakeButton.style.display = 'flex';
-        submitButton.style.display = 'flex';
-
-        addLog('Photo captured: ' + canvas.width + 'x' + canvas.height +
-               ', ~' + Math.round(capturedPhotoData.length / 1024) + ' KB', 'info');
-
+        retakeButton.style.display = 'block';
+        submitButton.style.display = 'block';
         closePhotoCamera();
-
         step2Number.textContent = '✓';
         step2Number.classList.add('completed');
         progressFill.style.width = '100%';
-
-        showPhotoStatus('✅ Photo captured. Tap Submit to process.', 'success');
-        buzz([100, 50, 100]);
-        setTimeout(hidePhotoStatus, 3000);
+        showPhotoStatus('✅ Photo captured! Click Submit to process.', 'success');
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        setTimeout(() => { hidePhotoStatus(); }, 3000);
       }
-
+      
       function retakePhoto() {
         photoPreview.classList.remove('active');
         capturedPhoto.src = '';
@@ -1461,172 +1342,80 @@
         capturedPhotoData = null;
         openPhotoCamera();
       }
-
+      
       function closePhotoCamera() {
         if (photoStream) {
-          photoStream.getTracks().forEach(function (track) { track.stop(); });
+          photoStream.getTracks().forEach(track => track.stop());
           photoStream = null;
         }
-        photoVideo.srcObject = null;
         photoCameraOverlay.classList.remove('active');
       }
-
-      /* ===================== SUBMIT ===================== */
-
-      async function postToBackend(payload, timeoutMs) {
-        const controller = new AbortController();
-        const timer = setTimeout(function () { controller.abort(); }, timeoutMs);
-
+      
+      async function submitParcel() {
+        if (!input.value.trim() || !capturedPhotoData) {
+          alert('Please complete all steps before submitting.');
+          return;
+        }
+        
+        submitButton.disabled = true;
+        submitButton.textContent = '⏳ Processing...';
+        
         try {
+          const payload = {
+            action: 'submitParcel',
+            trackingNumber: input.value.trim(),
+            photoBase64: capturedPhotoData
+          };
+          
           const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
             mode: 'cors',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(Object.assign({ token: CLIENT_TOKEN }, payload)),
-            signal: controller.signal
+            body: JSON.stringify(payload)
           });
-
-          const text = await response.text();
-          try {
-            return JSON.parse(text);
-          } catch (parseErr) {
-            addLog('Backend did not return JSON: ' + text.substring(0, 200), 'error');
-            throw new Error('The server returned an unexpected response.');
+          
+          const responseText = await response.text();
+          const result = JSON.parse(responseText);
+          
+          if (result.logs && result.logs.length > 0) {
+            addLog('=== BACKEND LOGS ===', 'warning');
+            result.logs.forEach(log => { addLog('[BACKEND] ' + log, 'info'); });
+            addLog('=== END BACKEND LOGS ===', 'warning');
           }
-        } finally {
-          clearTimeout(timer);
-        }
-      }
-
-      function renderBackendLogs(result) {
-        if (result && result.logs && result.logs.length) {
-          addLog('--- backend ---', 'warning');
-          result.logs.forEach(function (line) { addLog(line, 'info'); });
-          addLog('--- end backend ---', 'warning');
-        }
-      }
-
-      async function submitParcel() {
-        if (isSubmitting) return;
-
-        if (!input.value.trim() || !capturedPhotoData) {
-          alert('Please complete both steps before submitting.');
-          return;
-        }
-
-        isSubmitting = true;
-        submitButton.disabled = true;
-        submitLabel.textContent = 'Processing...';
-        addLog('Submitting parcel ' + confirmedTracking + '...', 'info');
-
-        try {
-          const result = await postToBackend({
-            action: 'submitParcel',
-            trackingNumber: input.value.trim(),
-            photoBase64: capturedPhotoData,
-            device: navigator.userAgent
-          }, SUBMIT_TIMEOUT);
-
-          renderBackendLogs(result);
-
+          
           if (result.success && result.data) {
-            showSummary(result.data);
+            showSummary(result.data.trackingNumber, result.data.weight, result.data.driveLink);
+            submitButton.disabled = false;
+            submitButton.textContent = '✅ Submit Parcel';
           } else {
-            addLog('Backend rejected: ' + result.message, 'error');
-            alert('Error: ' + (result.message || 'Unknown error'));
+            alert('Error: ' + result.message);
+            submitButton.disabled = false;
+            submitButton.textContent = '✅ Submit Parcel';
           }
         } catch (error) {
-          const msg = (error.name === 'AbortError')
-            ? 'The server took too long to respond. Check the sheet before resubmitting — the parcel may already be saved.'
-            : ('Error submitting parcel: ' + (error.message || error));
-          addLog('Submit failed: ' + msg, 'error');
-          alert(msg);
-        } finally {
-          isSubmitting = false;
+          alert('Error submitting parcel: ' + (error.message || error));
           submitButton.disabled = false;
-          submitLabel.textContent = 'Submit Parcel';
+          submitButton.textContent = '✅ Submit Parcel';
         }
       }
-
-      function showSummary(data) {
+      
+      function showSummary(trackingNumber, weight, driveLink) {
         summaryContainer.classList.add('active');
-        summaryTracking.textContent = data.trackingNumber;
-        summaryLink.textContent = data.driveLink || '-';
-
-        const needsWeight = (data.status !== 'OK' || !data.weight);
-
-        summaryContainer.classList.toggle('needs-weight', needsWeight);
-        manualWeight.classList.toggle('active', needsWeight);
-
-        if (needsWeight) {
-          summaryTitle.textContent = '⚠️ Photo saved — weight not read';
-          summaryWeight.textContent = 'Not read';
-          manualWeightInput.value = '';
-          addLog('OCR failed. Raw response: "' + (data.rawOcr || '') + '"', 'warning');
-        } else {
-          summaryTitle.textContent = '✅ Parcel Submitted Successfully!';
-          summaryWeight.textContent = data.weight;
-        }
-
-        summaryContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        summaryTracking.textContent = trackingNumber;
+        summaryWeight.textContent = weight;
+        summaryLink.textContent = driveLink;
       }
-
-      async function saveManualWeight() {
-        const value = manualWeightInput.value.trim();
-        if (!value) {
-          alert('Type the weight shown on the scale.');
-          return;
-        }
-
-        manualWeightButton.disabled = true;
-        manualWeightLabel.textContent = 'Saving...';
-
-        try {
-          const result = await postToBackend({
-            action: 'setWeight',
-            trackingNumber: confirmedTracking,
-            weight: value
-          }, 30000);
-
-          renderBackendLogs(result);
-
-          if (result.success && result.data) {
-            summaryWeight.textContent = result.data.weight;
-            summaryTitle.textContent = '✅ Parcel Submitted Successfully!';
-            summaryContainer.classList.remove('needs-weight');
-            manualWeight.classList.remove('active');
-            addLog('Manual weight saved: ' + result.data.weight, 'info');
-          } else {
-            alert('Error: ' + (result.message || 'Could not save weight'));
-          }
-        } catch (error) {
-          alert('Error saving weight: ' + (error.message || error));
-        } finally {
-          manualWeightButton.disabled = false;
-          manualWeightLabel.textContent = 'Save Weight';
-        }
-      }
-
-      /* ===================== RESET ===================== */
-
+      
       function resetForm() {
-        clearTimeout(typingTimer);
         input.value = '';
-        resetTrackingState();
-        summaryContainer.classList.remove('active', 'needs-weight');
-        manualWeight.classList.remove('active');
-        manualWeightInput.value = '';
-        logConsole.innerHTML = '';
-        hideStatus();
+        removeFilled();
+        summaryContainer.classList.remove('active');
+        hideStep2();
         input.focus();
       }
-
-      // Keep focus on the input so a USB scanner always lands in the right box.
-      document.querySelector('.container').addEventListener('click', function (e) {
-        if (e.target.tagName !== 'BUTTON' &&
-            e.target.tagName !== 'INPUT' &&
-            !step2Container.contains(e.target) &&
-            !summaryContainer.contains(e.target)) {
+      
+      document.querySelector('.container').addEventListener('click', function(e) {
+        if (e.target.tagName !== 'BUTTON' && !step2Container.contains(e.target) && !summaryContainer.contains(e.target)) {
           input.focus();
         }
       });
