@@ -671,7 +671,7 @@
     <div class="container">
       <div class="header">
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner 10:25</h1>
+        <h1>Parcel Scanner 10:37</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
@@ -871,28 +871,18 @@
           if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
           }
-          
           if (audioContext.state === 'suspended') {
             audioContext.resume();
           }
-          
           const oscillator = audioContext.createOscillator();
           const gainNode = audioContext.createGain();
-          
           oscillator.connect(gainNode);
           gainNode.connect(audioContext.destination);
-          
           oscillator.frequency.value = 2000;
           oscillator.type = 'square';
-          
           gainNode.gain.value = 0.3;
-          
           oscillator.start();
-          
-          setTimeout(function() {
-            oscillator.stop();
-          }, 100);
-          
+          setTimeout(function() { oscillator.stop(); }, 100);
         } catch (e) {
           addLog('Audio not available: ' + e.message, 'error');
         }
@@ -914,13 +904,9 @@
       input.addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && this.value.trim() !== '') {
           const now = Date.now();
-          if (this.value.trim() === lastScannedValue && now - lastScanTime < 500) {
-            return;
-          }
-          
+          if (this.value.trim() === lastScannedValue && now - lastScanTime < 500) return;
           lastScannedValue = this.value.trim();
           lastScanTime = now;
-          
           addLog('Tracking number entered: ' + this.value.trim(), 'info');
           playBeepSound();
           markAsFilled();
@@ -946,9 +932,7 @@
       });
       
       input.addEventListener('blur', function() {
-        if (this.value.trim() !== '') {
-          markAsFilled();
-        }
+        if (this.value.trim() !== '') markAsFilled();
       });
       
       function markAsFilled() {
@@ -956,24 +940,15 @@
         cameraIconButton.classList.add('success');
         clearButtonInline.classList.add('active');
         showStatus('✅ Tracking number captured successfully!', 'success');
-        addLog('Step 1 completed: Tracking number = ' + input.value.trim(), 'info');
-        
         showStep2();
-        
-        if (navigator.vibrate) {
-          navigator.vibrate(100);
-        }
-        
-        setTimeout(function() {
-          hideStatus();
-        }, 2000);
+        if (navigator.vibrate) navigator.vibrate(100);
+        setTimeout(function() { hideStatus(); }, 2000);
       }
       
       function removeFilled() {
         input.classList.remove('filled');
         cameraIconButton.classList.remove('success');
         clearButtonInline.classList.remove('active');
-        
         hideStep2();
       }
       
@@ -982,7 +957,6 @@
         removeFilled();
         input.focus();
         hideStatus();
-        addLog('Tracking number cleared', 'warning');
       }
       
       function showStep2() {
@@ -991,7 +965,6 @@
         step1Number.textContent = '✓';
         step1Number.classList.add('completed');
         step2Number.textContent = '2';
-        addLog('Step 2 shown: Capture photo', 'info');
       }
       
       function hideStep2() {
@@ -1000,7 +973,6 @@
         step1Number.textContent = '1';
         step1Number.classList.remove('completed');
         step2Number.textContent = '2';
-        
         photoPreview.classList.remove('active');
         capturedPhoto.src = '';
         retakeButton.style.display = 'none';
@@ -1028,6 +1000,7 @@
         photoStatus.style.display = 'none';
       }
       
+      // ========== FIXED: Camera Scanning with device enumeration ==========
       async function startScanner() {
         cameraOptions.classList.remove('active');
         
@@ -1040,12 +1013,16 @@
           addLog('Opening barcode scanner...', 'info');
           cameraOverlay.classList.add('active');
           
+          // Ensure reader div is clean
+          const readerElement = document.getElementById('reader');
+          readerElement.innerHTML = '';
+          
           html5QrCode = new Html5Qrcode("reader");
           
           const config = {
             fps: 10,
             qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0,
+            useBarCodeDetectorIfSupported: true,
             formatsToSupport: [
               Html5QrcodeSupportedFormats.QR_CODE,
               Html5QrcodeSupportedFormats.EAN_13,
@@ -1059,55 +1036,54 @@
             ]
           };
           
-          let cameraConfigs = [
-            { facingMode: "environment" },
-            { facingMode: { exact: "environment" } },
-            true
-          ];
+          // Enumerate cameras
+          addLog('Enumerating cameras...', 'info');
+          const cameras = await Html5Qrcode.getCameras();
           
-          let started = false;
+          if (!cameras || cameras.length === 0) {
+            throw new Error('No cameras found. Please ensure page is served over HTTPS.');
+          }
           
-          for (const cameraConfig of cameraConfigs) {
-            try {
-              await html5QrCode.start(
-                cameraConfig,
-                config,
-                onScanSuccess,
-                onScanFailure
-              );
-              started = true;
+          addLog('Found ' + cameras.length + ' camera(s):', 'info');
+          cameras.forEach((cam, index) => {
+            addLog('  Camera ' + index + ': ' + cam.id + ' - ' + (cam.label || 'No label'), 'info');
+          });
+          
+          // Find back camera (environment facing)
+          let selectedCamera = cameras[0];
+          for (const cam of cameras) {
+            const label = (cam.label || '').toLowerCase();
+            if (label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('后') || label.includes('背面')) {
+              selectedCamera = cam;
               break;
-            } catch (cameraError) {
-              addLog('Failed with config: ' + JSON.stringify(cameraConfig), 'warning');
-              try {
-                await html5QrCode.stop();
-                await html5QrCode.clear();
-              } catch (stopError) {}
             }
           }
           
-          if (!started) {
-            throw new Error('Could not start camera');
-          }
+          addLog('Selected camera: ' + (selectedCamera.label || selectedCamera.id), 'info');
+          
+          await html5QrCode.start(
+            selectedCamera.id,
+            config,
+            onScanSuccess,
+            onScanFailure
+          );
           
           isScanning = true;
           addLog('Scanner started successfully', 'info');
           
         } catch (error) {
           console.error('Camera error:', error);
-          addLog('Scanner error: ' + error.message, 'error');
+          const errMsg = error && error.message ? error.message : String(error);
+          addLog('Scanner error: ' + errMsg, 'error');
           cameraOverlay.classList.remove('active');
           
           let errorMessage = 'Unable to access camera. ';
-          
-          if (error.name === 'NotAllowedError' || error.message.includes('permission')) {
-            errorMessage += 'Camera permission denied. Please allow camera access in your browser settings.';
-          } else if (error.name === 'NotFoundError') {
-            errorMessage += 'No camera found on this device.';
-          } else if (error.name === 'NotReadableError') {
-            errorMessage += 'Camera is already in use by another application.';
+          if (errMsg.includes('permission') || errMsg.includes('NotAllowed')) {
+            errorMessage += 'Camera permission denied.';
+          } else if (errMsg.includes('NotFound') || errMsg.includes('No cameras')) {
+            errorMessage += 'No camera found.';
           } else {
-            errorMessage += error.message;
+            errorMessage += errMsg;
           }
           
           alert(errorMessage);
@@ -1118,35 +1094,29 @@
       function onScanSuccess(decodedText, decodedResult) {
         addLog('Code detected: ' + decodedText, 'info');
         stopScanner();
-        
         playBeepSound();
-        
         input.value = decodedText;
         markAsFilled();
-        
-        if (navigator.vibrate) {
-          navigator.vibrate([100, 50, 100]);
-        }
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
       }
       
       function onScanFailure(error) {
         // Silent failure
       }
       
-      // NEW: Capture photo from live camera for barcode/QR processing
+      // ========== FIXED: Capture from live camera ==========
       function captureFromLiveCamera() {
         try {
           addLog('Capturing photo from live camera...', 'info');
           
           const videoElement = document.querySelector('#reader video');
           
-          if (!videoElement || !videoElement.srcObject) {
+          if (!videoElement || !videoElement.videoWidth) {
             addLog('No video stream available', 'error');
-            alert('Camera is not ready. Please wait a moment and try again.');
+            alert('Camera is not ready. Please wait a moment.');
             return;
           }
           
-          // Create canvas from video frame
           const canvas = document.createElement('canvas');
           canvas.width = videoElement.videoWidth;
           canvas.height = videoElement.videoHeight;
@@ -1154,74 +1124,81 @@
           const ctx = canvas.getContext('2d');
           ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
           
-          // Convert to data URL
           const photoDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          addLog('Photo captured. Size: ' + Math.round(photoDataUrl.length / 1024) + ' KB', 'info');
           
-          addLog('Photo captured from live camera. Processing...', 'info');
-          
-          // Close live camera scanner
           stopScanner();
-          
-          // Process the captured photo
-          processCapturedCode(photoDataUrl);
+          processCapturedCodeWithDeepSeek(photoDataUrl);
           
         } catch (error) {
-          addLog('Capture error: ' + error.message, 'error');
-          alert('Error capturing photo: ' + error.message);
+          const errMsg = error && error.message ? error.message : String(error);
+          addLog('Capture error: ' + errMsg, 'error');
+          alert('Error capturing photo. Please try again.');
         }
       }
       
-      // Process captured photo for barcode/QR detection
-      function processCapturedCode(imageDataUrl) {
-        addLog('Processing captured image...', 'info');
-        showStatus('Decoding code from captured photo...', 'info');
+      // ========== FIXED: Process with DeepSeek ==========
+      async function processCapturedCodeWithDeepSeek(imageDataUrl) {
+        addLog('Sending to DeepSeek Vision API...', 'info');
+        showStatus('Reading code from photo...', 'info');
         
-        const tempScanner = new Html5Qrcode("tempScanner");
-        
-        const tempContainer = document.createElement('div');
-        tempContainer.id = 'tempScanner';
-        tempContainer.style.display = 'none';
-        document.body.appendChild(tempContainer);
-        
-        // Convert data URL to file
-        fetch(imageDataUrl)
-          .then(res => res.blob())
-          .then(blob => {
-            const file = new File([blob], 'captured_photo.jpg', { type: 'image/jpeg' });
-            
-            tempScanner.scanFile(file, true)
-              .then(decodedText => {
-                tempScanner.clear();
-                tempContainer.remove();
-                
-                addLog('Code found in captured photo: ' + decodedText, 'info');
-                playBeepSound();
-                
-                input.value = decodedText;
-                markAsFilled();
-                
-                if (navigator.vibrate) {
-                  navigator.vibrate([100, 50, 100]);
-                }
-              })
-              .catch(err => {
-                console.error('Scan error:', err);
-                tempScanner.clear();
-                tempContainer.remove();
-                
-                addLog('No code found in captured photo', 'error');
-                showStatus('No code found in photo. Please try again.', 'error');
-                setTimeout(function() {
-                  hideStatus();
-                }, 3000);
-              });
-          })
-          .catch(err => {
-            addLog('Error converting photo: ' + err.message, 'error');
-            tempScanner.clear();
-            tempContainer.remove();
-            showStatus('Error processing photo. Please try again.', 'error');
+        try {
+          const DEEPSEEK_API_KEY = 'sk-842bfc1e359149848ac6d736dea11ebf';
+          
+          const payload = {
+            model: 'deepseek-v4-flash-vision-exp',
+            messages: [
+              {
+                role: 'user',
+                content: [
+                  { type: 'image_url', image_url: { url: imageDataUrl } },
+                  { type: 'text', text: 'Look at this image. If there is a barcode or QR code visible, read and return ONLY the code value (tracking number). If no barcode or QR code is visible, return "ERROR: No code found". Return ONLY the code value, nothing else.' }
+                ]
+              }
+            ],
+            max_tokens: 200,
+            temperature: 0.1
+          };
+          
+          const response = await fetch('https://api.deepseek.com/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer ' + DEEPSEEK_API_KEY,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
           });
+          
+          if (!response.ok) {
+            throw new Error('DeepSeek API error: ' + response.status);
+          }
+          
+          const result = await response.json();
+          
+          let codeValue = '';
+          if (result.choices && result.choices[0] && result.choices[0].message) {
+            codeValue = result.choices[0].message.content.trim();
+          }
+          
+          addLog('Code extracted: "' + codeValue + '"', 'info');
+          
+          if (codeValue && codeValue !== 'ERROR: No code found' && !codeValue.startsWith('ERROR')) {
+            playBeepSound();
+            input.value = codeValue;
+            markAsFilled();
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            hideStatus();
+          } else {
+            showStatus('No code found in photo. Please try again.', 'error');
+            setTimeout(function() { hideStatus(); }, 3000);
+          }
+          
+        } catch (error) {
+          const errMsg = error && error.message ? error.message : String(error);
+          addLog('DeepSeek error: ' + errMsg, 'error');
+          showStatus('Error reading photo. Please try again.', 'error');
+          setTimeout(function() { hideStatus(); }, 3000);
+        }
       }
       
       async function stopScanner() {
@@ -1229,9 +1206,8 @@
           try {
             await html5QrCode.stop();
             await html5QrCode.clear();
-            addLog('Scanner stopped', 'info');
           } catch (e) {
-            addLog('Error stopping scanner: ' + e.message, 'error');
+            // Ignore
           }
           html5QrCode = null;
           isScanning = false;
@@ -1247,27 +1223,16 @@
             const videoTrack = videoElement.srcObject.getVideoTracks()[0];
             if (videoTrack && videoTrack.getCapabilities) {
               const capabilities = videoTrack.getCapabilities();
-              
               if (capabilities.focusMode) {
                 const focusModes = capabilities.focusMode;
-                
                 if (focusModes.includes('continuous')) {
-                  await videoTrack.applyConstraints({
-                    advanced: [{ focusMode: 'continuous' }]
-                  });
+                  await videoTrack.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
                 } else if (focusModes.includes('auto')) {
-                  await videoTrack.applyConstraints({
-                    advanced: [{ focusMode: 'auto' }]
-                  });
+                  await videoTrack.applyConstraints({ advanced: [{ focusMode: 'auto' }] });
                 }
-                
                 const guide = document.querySelector('.camera-guide');
                 guide.style.borderColor = '#ffffff';
-                guide.style.transition = 'border-color 0.3s';
-                
-                setTimeout(() => {
-                  guide.style.borderColor = '#10b981';
-                }, 300);
+                setTimeout(() => { guide.style.borderColor = '#10b981'; }, 300);
               }
             }
           }
@@ -1276,6 +1241,7 @@
         }
       });
       
+      // ========== FIXED: Scan from file (gallery) ==========
       function scanFromFile() {
         cameraOptions.classList.remove('active');
         
@@ -1287,39 +1253,39 @@
           const file = e.target.files[0];
           if (file) {
             addLog('File selected: ' + file.name, 'info');
-            showStatus('Decoding code...', 'info');
+            showStatus('Reading code from image...', 'info');
             
-            const tempScanner = new Html5Qrcode("tempScanner");
-            
+            // Create temp container FIRST
             const tempContainer = document.createElement('div');
             tempContainer.id = 'tempScanner';
             tempContainer.style.display = 'none';
             document.body.appendChild(tempContainer);
             
+            // THEN create scanner
+            const tempScanner = new Html5Qrcode("tempScanner");
+            
             tempScanner.scanFile(file, true)
               .then(decodedText => {
                 tempScanner.clear();
                 tempContainer.remove();
-                
                 addLog('Code found: ' + decodedText, 'info');
                 playBeepSound();
-                
                 input.value = decodedText;
                 markAsFilled();
-                
-                if (navigator.vibrate) {
-                  navigator.vibrate([100, 50, 100]);
-                }
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                hideStatus();
               })
               .catch(err => {
                 console.error('Scan error:', err);
                 tempScanner.clear();
                 tempContainer.remove();
                 
-                showStatus('No code found in image. Please try again.', 'error');
-                setTimeout(function() {
-                  hideStatus();
-                }, 3000);
+                // Try DeepSeek fallback
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                  processCapturedCodeWithDeepSeek(event.target.result);
+                };
+                reader.readAsDataURL(file);
               });
           }
         };
@@ -1329,9 +1295,7 @@
       
       async function openPhotoCamera() {
         try {
-          addLog('Opening photo camera...', 'info');
           photoCameraOverlay.classList.add('active');
-          
           const constraints = {
             video: {
               facingMode: { ideal: 'environment' },
@@ -1340,42 +1304,23 @@
             },
             audio: false
           };
-          
           photoStream = await navigator.mediaDevices.getUserMedia(constraints);
           photoVideo.srcObject = photoStream;
           await photoVideo.play();
-          addLog('Photo camera ready', 'info');
-          
         } catch (error) {
-          console.error('Photo camera error:', error);
           photoCameraOverlay.classList.remove('active');
-          
-          let errorMessage = 'Unable to access camera. ';
-          
-          if (error.name === 'NotAllowedError' || error.message.includes('permission')) {
-            errorMessage += 'Camera permission denied. Please allow camera access in your browser settings.';
-          } else if (error.name === 'NotFoundError') {
-            errorMessage += 'No camera found on this device.';
-          } else {
-            errorMessage += error.message;
-          }
-          
-          alert(errorMessage);
+          alert('Unable to access camera: ' + (error.message || error));
         }
       }
       
       function capturePhoto() {
         if (!photoStream) return;
-        
         const canvas = document.createElement('canvas');
         const video = photoVideo;
-        
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
         const timestamp = new Date();
         const timestampStr = timestamp.toLocaleString();
         ctx.font = 'bold 30px Arial';
@@ -1383,30 +1328,19 @@
         ctx.fillRect(10, canvas.height - 50, 300, 40);
         ctx.fillStyle = 'black';
         ctx.fillText(timestampStr, 20, canvas.height - 20);
-        
         const photoDataUrl = canvas.toDataURL('image/png');
-        
         capturedPhoto.src = photoDataUrl;
         capturedPhotoData = photoDataUrl;
         photoPreview.classList.add('active');
         retakeButton.style.display = 'block';
         submitButton.style.display = 'block';
-        
         closePhotoCamera();
-        
         step2Number.textContent = '✓';
         step2Number.classList.add('completed');
         progressFill.style.width = '100%';
-        
         showPhotoStatus('✅ Photo captured! Click Submit to process.', 'success');
-        
-        if (navigator.vibrate) {
-          navigator.vibrate([100, 50, 100]);
-        }
-        
-        setTimeout(() => {
-          hidePhotoStatus();
-        }, 3000);
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        setTimeout(() => { hidePhotoStatus(); }, 3000);
       }
       
       function retakePhoto() {
@@ -1448,9 +1382,7 @@
           const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
             mode: 'cors',
-            headers: {
-              'Content-Type': 'text/plain;charset=utf-8',
-            },
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(payload)
           });
           
@@ -1459,31 +1391,21 @@
           
           if (result.logs && result.logs.length > 0) {
             addLog('=== BACKEND LOGS ===', 'warning');
-            result.logs.forEach(log => {
-              addLog('[BACKEND] ' + log, 'info');
-            });
+            result.logs.forEach(log => { addLog('[BACKEND] ' + log, 'info'); });
             addLog('=== END BACKEND LOGS ===', 'warning');
           }
           
           if (result.success && result.data) {
-            showSummary(
-              result.data.trackingNumber,
-              result.data.weight,
-              result.data.driveLink
-            );
-            
+            showSummary(result.data.trackingNumber, result.data.weight, result.data.driveLink);
             submitButton.disabled = false;
             submitButton.textContent = '✅ Submit Parcel';
-            
           } else {
             alert('Error: ' + result.message);
             submitButton.disabled = false;
             submitButton.textContent = '✅ Submit Parcel';
           }
-          
         } catch (error) {
-          console.error('Submit error:', error);
-          alert('Error submitting parcel: ' + error.message);
+          alert('Error submitting parcel: ' + (error.message || error));
           submitButton.disabled = false;
           submitButton.textContent = '✅ Submit Parcel';
         }
