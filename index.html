@@ -53,7 +53,8 @@
         width: 100%;
         max-width: 500px;
         margin: auto;
-        overflow: hidden;
+        overflow: visible;
+        position: relative;
       }
       
       .header {
@@ -61,6 +62,7 @@
         padding: 24px 24px 20px;
         text-align: center;
         position: relative;
+        border-radius: 20px 20px 0 0;
       }
       
       .header-icon {
@@ -105,6 +107,7 @@
       
       .content {
         padding: 24px;
+        overflow: visible;
       }
       
       .step-indicator {
@@ -140,6 +143,8 @@
       
       .form-group {
         margin-bottom: 20px;
+        position: relative;
+        z-index: 10;
       }
       
       .form-label {
@@ -154,6 +159,7 @@
       
       .scanner-box {
         position: relative;
+        z-index: 10;
       }
       
       .scanner-box input {
@@ -216,18 +222,18 @@
         background: var(--success-light);
       }
       
-      /* Camera Options Dropdown */
+      /* Camera Options Dropdown - Positioned BELOW input */
       .camera-options {
         display: none;
         position: absolute;
-        right: 8px;
-        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        top: calc(100% + 4px);
         background: white;
         border: 2px solid var(--gray-200);
         border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-        z-index: 100;
-        min-width: 200px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        z-index: 9999;
         overflow: hidden;
       }
       
@@ -469,7 +475,7 @@
         width: 100%;
         height: 100%;
         background: rgba(0, 0, 0, 0.97);
-        z-index: 9999;
+        z-index: 99999;
         flex-direction: column;
       }
       
@@ -602,17 +608,73 @@
         background: #059669;
       }
       
+      /* Button Grid for Step 2 */
+      .button-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      
+      .button-full {
+        grid-column: 1;
+      }
+      
+      .action-button {
+        padding: 14px;
+        font-size: 14px;
+        font-weight: 600;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        touch-action: manipulation;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 48px;
+        width: 100%;
+      }
+      
+      .action-button:active {
+        transform: scale(0.97);
+      }
+      
+      .action-button.primary {
+        background: var(--primary);
+        color: white;
+      }
+      
+      .action-button.primary:hover {
+        background: var(--primary-dark);
+      }
+      
+      .action-button.danger {
+        background: var(--danger);
+        color: white;
+      }
+      
+      .action-button.danger:hover {
+        background: #dc2626;
+      }
+      
+      .action-button.success {
+        background: var(--success);
+        color: white;
+      }
+      
+      .action-button.success:hover {
+        background: #059669;
+      }
+      
+      .action-button .icon {
+        font-size: 20px;
+      }
+      
       @media (max-width: 480px) {
         .content {
           padding: 20px;
-        }
-        
-        .button-grid {
-          grid-template-columns: 1fr;
-        }
-        
-        .button-full {
-          grid-column: 1;
         }
       }
     </style>
@@ -621,7 +683,7 @@
     <div class="container">
       <div class="header">
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner 10:06</h1>
+        <h1>Parcel Scanner 10:16</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
@@ -1082,7 +1144,6 @@
       
       cameraBody.addEventListener('click', async function() {
         try {
-          addLog('Manual focus triggered', 'info');
           const videoElement = document.querySelector('#reader video');
           if (videoElement && videoElement.srcObject) {
             const videoTrack = videoElement.srcObject.getVideoTracks()[0];
@@ -1096,12 +1157,10 @@
                   await videoTrack.applyConstraints({
                     advanced: [{ focusMode: 'continuous' }]
                   });
-                  addLog('Continuous focus applied', 'info');
                 } else if (focusModes.includes('auto')) {
                   await videoTrack.applyConstraints({
                     advanced: [{ focusMode: 'auto' }]
                   });
-                  addLog('Auto focus applied', 'info');
                 }
                 
                 const guide = document.querySelector('.camera-guide');
@@ -1115,7 +1174,7 @@
             }
           }
         } catch (error) {
-          addLog('Manual focus error: ' + error.message, 'error');
+          console.log('Manual focus error:', error);
         }
       });
       
@@ -1129,7 +1188,7 @@
         fileInput.onchange = function(e) {
           const file = e.target.files[0];
           if (file) {
-            addLog('File selected for scanning: ' + file.name, 'info');
+            addLog('File selected: ' + file.name, 'info');
             showStatus('Decoding code...', 'info');
             
             const tempScanner = new Html5Qrcode("tempScanner");
@@ -1144,7 +1203,7 @@
                 tempScanner.clear();
                 tempContainer.remove();
                 
-                addLog('Code found in file: ' + decodedText, 'info');
+                addLog('Code found: ' + decodedText, 'info');
                 playBeepSound();
                 
                 input.value = decodedText;
@@ -1156,7 +1215,6 @@
               })
               .catch(err => {
                 console.error('Scan error:', err);
-                addLog('File scan error: ' + err.message, 'error');
                 tempScanner.clear();
                 tempContainer.remove();
                 
@@ -1192,7 +1250,6 @@
           
         } catch (error) {
           console.error('Photo camera error:', error);
-          addLog('Photo camera error: ' + error.message, 'error');
           photoCameraOverlay.classList.remove('active');
           
           let errorMessage = 'Unable to access camera. ';
@@ -1212,8 +1269,6 @@
       function capturePhoto() {
         if (!photoStream) return;
         
-        addLog('Photo captured', 'info');
-        
         const canvas = document.createElement('canvas');
         const video = photoVideo;
         
@@ -1230,7 +1285,6 @@
         ctx.fillRect(10, canvas.height - 50, 300, 40);
         ctx.fillStyle = 'black';
         ctx.fillText(timestampStr, 20, canvas.height - 20);
-        addLog('Timestamp watermark added: ' + timestampStr, 'info');
         
         const photoDataUrl = canvas.toDataURL('image/png');
         
@@ -1247,7 +1301,6 @@
         progressFill.style.width = '100%';
         
         showPhotoStatus('✅ Photo captured! Click Submit to process.', 'success');
-        addLog('Step 2 completed: Photo ready for submission', 'info');
         
         if (navigator.vibrate) {
           navigator.vibrate([100, 50, 100]);
@@ -1259,7 +1312,6 @@
       }
       
       function retakePhoto() {
-        addLog('Retaking photo...', 'warning');
         photoPreview.classList.remove('active');
         capturedPhoto.src = '';
         retakeButton.style.display = 'none';
@@ -1277,26 +1329,18 @@
           photoStream = null;
         }
         photoCameraOverlay.classList.remove('active');
-        addLog('Photo camera closed', 'info');
       }
       
       async function submitParcel() {
         if (!input.value.trim() || !capturedPhotoData) {
-          addLog('Submit attempted with missing data', 'error');
           alert('Please complete all steps before submitting.');
           return;
         }
-        
-        addLog('=== SUBMITTING PARCEL ===', 'info');
-        addLog('Tracking Number: ' + input.value.trim(), 'info');
-        addLog('Photo data size: ' + Math.round(capturedPhotoData.length / 1024) + ' KB', 'info');
         
         submitButton.disabled = true;
         submitButton.textContent = '⏳ Processing...';
         
         try {
-          addLog('Sending request to Google Apps Script...', 'info');
-          
           const payload = {
             action: 'submitParcel',
             trackingNumber: input.value.trim(),
@@ -1312,8 +1356,6 @@
             body: JSON.stringify(payload)
           });
           
-          addLog('Response status: ' + response.status, 'info');
-          
           const responseText = await response.text();
           const result = JSON.parse(responseText);
           
@@ -1326,8 +1368,6 @@
           }
           
           if (result.success && result.data) {
-            addLog('=== SUBMISSION COMPLETE ===', 'info');
-            
             showSummary(
               result.data.trackingNumber,
               result.data.weight,
@@ -1338,7 +1378,6 @@
             submitButton.textContent = '✅ Submit Parcel';
             
           } else {
-            addLog('Submission failed: ' + result.message, 'error');
             alert('Error: ' + result.message);
             submitButton.disabled = false;
             submitButton.textContent = '✅ Submit Parcel';
@@ -1346,7 +1385,6 @@
           
         } catch (error) {
           console.error('Submit error:', error);
-          addLog('Submit error: ' + error.message, 'error');
           alert('Error submitting parcel: ' + error.message);
           submitButton.disabled = false;
           submitButton.textContent = '✅ Submit Parcel';
@@ -1361,7 +1399,6 @@
       }
       
       function resetForm() {
-        addLog('Form reset for next parcel', 'warning');
         input.value = '';
         removeFilled();
         summaryContainer.classList.remove('active');
