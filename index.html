@@ -594,7 +594,7 @@
     <div class="container">
       <div class="header">
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner</h1>
+        <h1>Parcel Scanner 9:57</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
@@ -910,9 +910,7 @@
         step2Number.textContent = '2';
         addLog('Step 2 shown: Capture photo', 'info');
         
-        setTimeout(() => {
-          step2Container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 300);
+        // NO AUTO-SCROLL - Step 2 appears in place without moving buttons
       }
       
       function hideStep2() {
@@ -1269,7 +1267,6 @@
           
           addLog('Payload prepared', 'info');
           
-          // Use text/plain to avoid CORS preflight
           const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
             mode: 'cors',
@@ -1291,7 +1288,6 @@
           addLog('Success: ' + result.success, result.success ? 'info' : 'error');
           addLog('Message: ' + result.message, result.success ? 'info' : 'error');
           
-          // Display backend logs
           if (result.logs && result.logs.length > 0) {
             addLog('=== BACKEND LOGS ===', 'warning');
             result.logs.forEach(log => {
@@ -1342,8 +1338,6 @@
         summaryTracking.textContent = trackingNumber;
         summaryWeight.textContent = weight;
         summaryLink.textContent = driveLink;
-        
-        summaryContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
       
       function resetForm() {
