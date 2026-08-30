@@ -158,7 +158,7 @@
       
       .scanner-box input {
         width: 100%;
-        padding: 16px 50px 16px 16px;
+        padding: 16px 60px 16px 16px;
         font-size: 16px;
         border: 2px solid var(--gray-300);
         border-radius: 12px;
@@ -187,88 +187,115 @@
         background: var(--success-light);
       }
       
-      .scanner-status {
+      .camera-icon-button {
         position: absolute;
-        right: 16px;
+        right: 8px;
         top: 50%;
         transform: translateY(-50%);
-        font-size: 20px;
-        pointer-events: none;
-      }
-      
-      .scanner-status.success {
-        color: var(--success);
-      }
-      
-      .button-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-bottom: 16px;
-      }
-      
-      .button-full {
-        grid-column: 1 / -1;
-      }
-      
-      .action-button {
-        padding: 14px;
-        font-size: 14px;
-        font-weight: 600;
+        width: 40px;
+        height: 40px;
+        background: var(--primary-light);
         border: none;
-        border-radius: 12px;
+        border-radius: 8px;
         cursor: pointer;
-        transition: all 0.2s;
-        touch-action: manipulation;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        min-height: 48px;
+        font-size: 20px;
+        transition: all 0.2s;
+        touch-action: manipulation;
+        pointer-events: auto;
       }
       
-      .action-button:active {
-        transform: scale(0.97);
-      }
-      
-      .action-button.primary {
+      .camera-icon-button:active {
+        transform: translateY(-50%) scale(0.9);
         background: var(--primary);
-        color: white;
       }
       
-      .action-button.primary:hover {
-        background: var(--primary-dark);
+      .camera-icon-button.success {
+        background: var(--success-light);
       }
       
-      .action-button.secondary {
-        background: var(--gray-100);
+      /* Camera Options Dropdown */
+      .camera-options {
+        display: none;
+        position: absolute;
+        right: 8px;
+        top: calc(100% + 8px);
+        background: white;
+        border: 2px solid var(--gray-200);
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        z-index: 100;
+        min-width: 200px;
+        overflow: hidden;
+      }
+      
+      .camera-options.active {
+        display: block;
+        animation: slideDown 0.2s ease-out;
+      }
+      
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      .camera-option {
+        width: 100%;
+        padding: 14px 16px;
+        border: none;
+        background: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        font-weight: 500;
         color: var(--gray-700);
+        transition: background 0.2s;
+        touch-action: manipulation;
       }
       
-      .action-button.secondary:hover {
-        background: var(--gray-200);
+      .camera-option:hover {
+        background: var(--gray-50);
       }
       
-      .action-button.success {
-        background: var(--success);
-        color: white;
+      .camera-option:not(:last-child) {
+        border-bottom: 1px solid var(--gray-100);
       }
       
-      .action-button.success:hover {
-        background: #059669;
+      .camera-option .option-icon {
+        font-size: 20px;
       }
       
-      .action-button.danger {
+      .clear-button-inline {
+        display: none;
+        position: absolute;
+        right: 56px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 32px;
+        height: 32px;
         background: var(--danger);
         color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        align-items: center;
+        justify-content: center;
+        touch-action: manipulation;
       }
       
-      .action-button.danger:hover {
-        background: #dc2626;
-      }
-      
-      .action-button .icon {
-        font-size: 20px;
+      .clear-button-inline.active {
+        display: flex;
       }
       
       .status-message {
@@ -594,7 +621,7 @@
     <div class="container">
       <div class="header">
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner 9:57</h1>
+        <h1>Parcel Scanner 10:06</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
@@ -617,31 +644,32 @@
               placeholder="Scan or type tracking number..."
               autocomplete="off"
               inputmode="text"
+              autocapitalize="off"
+              autocorrect="off"
+              spellcheck="false"
             />
-            <span class="scanner-status" id="scannerStatus">📷</span>
+            <button class="clear-button-inline" id="clearButtonInline" onclick="clearTrackingNumber()">✕</button>
+            <button class="camera-icon-button" id="cameraIconButton" onclick="toggleCameraOptions(event)">
+              📷
+            </button>
+            <div class="camera-options" id="cameraOptions">
+              <button class="camera-option" onclick="startScanner()">
+                <span class="option-icon">📷</span>
+                Live Camera
+              </button>
+              <button class="camera-option" onclick="scanFromFile()">
+                <span class="option-icon">🖼️</span>
+                From Gallery
+              </button>
+            </div>
           </div>
-        </div>
-        
-        <div class="button-grid">
-          <button class="action-button primary" onclick="startScanner()">
-            <span class="icon">📷</span>
-            Scan Code
-          </button>
-          <button class="action-button secondary" onclick="scanFromFile()">
-            <span class="icon">📁</span>
-            From Photo
-          </button>
-          <button class="action-button danger button-full" onclick="clearTrackingNumber()" id="clearButton" style="display: none;">
-            <span class="icon">✕</span>
-            Clear Tracking Number
-          </button>
         </div>
         
         <div id="statusMessage" class="status-message"></div>
         
         <div class="helper-text" id="helperText">
           💡 USB scanner: Just scan the code<br>
-          📱 Phone: Use "Scan Code" button for camera
+          📱 Phone: Tap camera icon to scan
         </div>
         
         <!-- Step 2 - Photo Capture -->
@@ -666,7 +694,6 @@
             </button>
           </div>
           
-          <!-- Submit Button -->
           <button class="action-button success button-full" onclick="submitParcel()" id="submitButton" style="display: none;">
             <span class="icon">✅</span>
             Submit Parcel
@@ -732,7 +759,7 @@
         📸 Position parcel and scale in frame
       </div>
       <div class="camera-body">
-        <video id="photoVideo" autoplay playsinline></video>
+        <video id="photoVideo" autoplay playsinline muted></video>
       </div>
       <div class="camera-footer">
         <button class="camera-capture" onclick="capturePhoto()">
@@ -753,8 +780,6 @@
       const input = document.getElementById('trackingNumber');
       const statusMessage = document.getElementById('statusMessage');
       const cameraOverlay = document.getElementById('cameraOverlay');
-      const scannerStatus = document.getElementById('scannerStatus');
-      const clearButton = document.getElementById('clearButton');
       const cameraBody = document.getElementById('cameraBody');
       const step2Container = document.getElementById('step2Container');
       const progressFill = document.getElementById('progressFill');
@@ -772,6 +797,9 @@
       const summaryWeight = document.getElementById('summaryWeight');
       const summaryLink = document.getElementById('summaryLink');
       const logConsole = document.getElementById('logConsole');
+      const cameraIconButton = document.getElementById('cameraIconButton');
+      const cameraOptions = document.getElementById('cameraOptions');
+      const clearButtonInline = document.getElementById('clearButtonInline');
       
       let html5QrCode = null;
       let isScanning = false;
@@ -824,6 +852,18 @@
         }
       }
       
+      function toggleCameraOptions(event) {
+        event.stopPropagation();
+        cameraOptions.classList.toggle('active');
+      }
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!cameraOptions.contains(e.target) && e.target !== cameraIconButton) {
+          cameraOptions.classList.remove('active');
+        }
+      });
+      
       input.focus();
       
       input.addEventListener('keypress', function(e) {
@@ -868,9 +908,8 @@
       
       function markAsFilled() {
         input.classList.add('filled');
-        scannerStatus.textContent = '✅';
-        scannerStatus.classList.add('success');
-        clearButton.style.display = 'block';
+        cameraIconButton.classList.add('success');
+        clearButtonInline.classList.add('active');
         showStatus('✅ Tracking number captured successfully!', 'success');
         addLog('Step 1 completed: Tracking number = ' + input.value.trim(), 'info');
         
@@ -887,9 +926,8 @@
       
       function removeFilled() {
         input.classList.remove('filled');
-        scannerStatus.textContent = '📷';
-        scannerStatus.classList.remove('success');
-        clearButton.style.display = 'none';
+        cameraIconButton.classList.remove('success');
+        clearButtonInline.classList.remove('active');
         
         hideStep2();
       }
@@ -909,8 +947,6 @@
         step1Number.classList.add('completed');
         step2Number.textContent = '2';
         addLog('Step 2 shown: Capture photo', 'info');
-        
-        // NO AUTO-SCROLL - Step 2 appears in place without moving buttons
       }
       
       function hideStep2() {
@@ -948,6 +984,8 @@
       }
       
       async function startScanner() {
+        cameraOptions.classList.remove('active');
+        
         if (isScanning) {
           await stopScanner();
           return;
@@ -1082,10 +1120,11 @@
       });
       
       function scanFromFile() {
+        cameraOptions.classList.remove('active');
+        
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
         fileInput.accept = 'image/*';
-        fileInput.capture = 'environment';
         
         fileInput.onchange = function(e) {
           const file = e.target.files[0];
@@ -1142,7 +1181,8 @@
               facingMode: { ideal: 'environment' },
               width: { ideal: 1920 },
               height: { ideal: 1080 }
-            }
+            },
+            audio: false
           };
           
           photoStream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -1183,7 +1223,6 @@
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        // Add timestamp watermark to canvas
         const timestamp = new Date();
         const timestampStr = timestamp.toLocaleString();
         ctx.font = 'bold 30px Arial';
@@ -1257,15 +1296,12 @@
         
         try {
           addLog('Sending request to Google Apps Script...', 'info');
-          addLog('URL: ' + GOOGLE_SCRIPT_URL, 'info');
           
           const payload = {
             action: 'submitParcel',
             trackingNumber: input.value.trim(),
             photoBase64: capturedPhotoData
           };
-          
-          addLog('Payload prepared', 'info');
           
           const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
@@ -1276,17 +1312,10 @@
             body: JSON.stringify(payload)
           });
           
-          addLog('Response received!', 'info');
           addLog('Response status: ' + response.status, 'info');
           
           const responseText = await response.text();
-          addLog('Response text length: ' + responseText.length + ' characters', 'info');
-          addLog('Response text preview: ' + responseText.substring(0, 200) + '...', 'info');
-          
           const result = JSON.parse(responseText);
-          addLog('Response parsed successfully', 'info');
-          addLog('Success: ' + result.success, result.success ? 'info' : 'error');
-          addLog('Message: ' + result.message, result.success ? 'info' : 'error');
           
           if (result.logs && result.logs.length > 0) {
             addLog('=== BACKEND LOGS ===', 'warning');
@@ -1298,9 +1327,6 @@
           
           if (result.success && result.data) {
             addLog('=== SUBMISSION COMPLETE ===', 'info');
-            addLog('Final Tracking Number: ' + result.data.trackingNumber, 'info');
-            addLog('Final Weight: ' + result.data.weight, 'info');
-            addLog('Final Drive Link: ' + result.data.driveLink, 'info');
             
             showSummary(
               result.data.trackingNumber,
@@ -1321,7 +1347,6 @@
         } catch (error) {
           console.error('Submit error:', error);
           addLog('Submit error: ' + error.message, 'error');
-          addLog('Error stack: ' + error.stack, 'error');
           alert('Error submitting parcel: ' + error.message);
           submitButton.disabled = false;
           submitButton.textContent = '✅ Submit Parcel';
@@ -1329,11 +1354,6 @@
       }
       
       function showSummary(trackingNumber, weight, driveLink) {
-        addLog('Showing summary...', 'info');
-        addLog('Tracking: ' + trackingNumber, 'info');
-        addLog('Weight: ' + weight, 'info');
-        addLog('Drive Link: ' + driveLink, 'info');
-        
         summaryContainer.classList.add('active');
         summaryTracking.textContent = trackingNumber;
         summaryWeight.textContent = weight;
