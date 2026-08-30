@@ -222,7 +222,6 @@
         background: var(--success-light);
       }
       
-      /* Camera Options Dropdown */
       .camera-options {
         display: none;
         position: absolute;
@@ -355,7 +354,6 @@
         line-height: 1.5;
       }
       
-      /* Step 2 - Photo Capture */
       .step-2-container {
         display: none;
         margin-top: 20px;
@@ -388,7 +386,6 @@
         object-fit: contain;
       }
       
-      /* Log Console */
       .log-console {
         margin-top: 16px;
         padding: 12px;
@@ -423,7 +420,6 @@
         color: #f59e0b;
       }
       
-      /* Summary */
       .summary-container {
         display: none;
         margin-top: 20px;
@@ -466,7 +462,6 @@
         color: var(--gray-900);
       }
       
-      /* Full-screen camera overlay */
       .camera-overlay {
         display: none;
         position: fixed;
@@ -563,6 +558,9 @@
       .camera-footer {
         padding: 20px;
         background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
       }
       
       .camera-cancel {
@@ -601,14 +599,12 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        margin-bottom: 10px;
       }
       
       .camera-capture:active {
         background: #059669;
       }
       
-      /* Button Grid for Step 2 */
       .button-grid {
         display: grid;
         grid-template-columns: 1fr;
@@ -655,17 +651,9 @@
         color: white;
       }
       
-      .action-button.danger:hover {
-        background: #dc2626;
-      }
-      
       .action-button.success {
         background: var(--success);
         color: white;
-      }
-      
-      .action-button.success:hover {
-        background: #059669;
       }
       
       .action-button .icon {
@@ -683,7 +671,7 @@
     <div class="container">
       <div class="header">
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner 10:23</h1>
+        <h1>Parcel Scanner 10:25</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
@@ -691,7 +679,6 @@
       </div>
       
       <div class="content">
-        <!-- Step 1 -->
         <div class="step-indicator">
           <div class="step-number completed" id="step1Number">✓</div>
           <div class="step-text">Enter Tracking Number</div>
@@ -734,7 +721,6 @@
           📱 Phone: Tap camera icon to scan
         </div>
         
-        <!-- Step 2 - Photo Capture -->
         <div class="step-2-container" id="step2Container">
           <div class="step-indicator">
             <div class="step-number" id="step2Number">2</div>
@@ -768,10 +754,8 @@
           </div>
         </div>
         
-        <!-- Log Console -->
         <div class="log-console" id="logConsole"></div>
         
-        <!-- Summary -->
         <div class="summary-container" id="summaryContainer">
           <div class="summary-title">✅ Parcel Submitted Successfully!</div>
           
@@ -798,7 +782,6 @@
       </div>
     </div>
 
-    <!-- Full-screen camera overlay for barcode scanning -->
     <div class="camera-overlay" id="cameraOverlay">
       <div class="camera-header">
         📷 Point camera at barcode or QR code
@@ -809,13 +792,15 @@
         <div class="focus-hint">👆 Tap screen to focus</div>
       </div>
       <div class="camera-footer">
+        <button class="camera-capture" onclick="captureFromLiveCamera()">
+          📸 Capture Photo
+        </button>
         <button class="camera-cancel" onclick="stopScanner()">
           ✕ Cancel
         </button>
       </div>
     </div>
     
-    <!-- Full-screen camera overlay for photo capture -->
     <div class="camera-overlay" id="photoCameraOverlay">
       <div class="camera-header">
         📸 Position parcel and scale in frame
@@ -833,7 +818,6 @@
       </div>
     </div>
 
-    <!-- html5-qrcode library -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     
     <script>
@@ -919,7 +903,6 @@
         cameraOptions.classList.toggle('active');
       }
       
-      // Close dropdown when clicking outside
       document.addEventListener('click', function(e) {
         if (!cameraOptions.contains(e.target) && e.target !== cameraIconButton) {
           cameraOptions.classList.remove('active');
@@ -1057,15 +1040,6 @@
           addLog('Opening barcode scanner...', 'info');
           cameraOverlay.classList.add('active');
           
-          // Check if Huawei device
-          const isHuawei = navigator.userAgent.includes('Huawei') || 
-                           navigator.userAgent.includes('HUAWEI') ||
-                           navigator.userAgent.includes('HarmonyOS');
-          
-          if (isHuawei) {
-            addLog('Huawei device detected - using compatibility mode', 'warning');
-          }
-          
           html5QrCode = new Html5Qrcode("reader");
           
           const config = {
@@ -1085,7 +1059,6 @@
             ]
           };
           
-          // Try multiple camera configurations
           let cameraConfigs = [
             { facingMode: "environment" },
             { facingMode: { exact: "environment" } },
@@ -1103,21 +1076,18 @@
                 onScanFailure
               );
               started = true;
-              addLog('Scanner started with config: ' + JSON.stringify(cameraConfig), 'info');
               break;
             } catch (cameraError) {
-              addLog('Failed with config: ' + JSON.stringify(cameraConfig) + ' - ' + cameraError.message, 'warning');
+              addLog('Failed with config: ' + JSON.stringify(cameraConfig), 'warning');
               try {
                 await html5QrCode.stop();
                 await html5QrCode.clear();
-              } catch (stopError) {
-                // Ignore stop errors
-              }
+              } catch (stopError) {}
             }
           }
           
           if (!started) {
-            throw new Error('Could not start camera with any configuration');
+            throw new Error('Could not start camera');
           }
           
           isScanning = true;
@@ -1138,11 +1108,6 @@
             errorMessage += 'Camera is already in use by another application.';
           } else {
             errorMessage += error.message;
-          }
-          
-          // Huawei-specific suggestion
-          if (navigator.userAgent.includes('Huawei') || navigator.userAgent.includes('HarmonyOS')) {
-            errorMessage += '\n\nFor Huawei devices: Try using Chrome browser instead of Huawei browser.';
           }
           
           alert(errorMessage);
@@ -1166,6 +1131,97 @@
       
       function onScanFailure(error) {
         // Silent failure
+      }
+      
+      // NEW: Capture photo from live camera for barcode/QR processing
+      function captureFromLiveCamera() {
+        try {
+          addLog('Capturing photo from live camera...', 'info');
+          
+          const videoElement = document.querySelector('#reader video');
+          
+          if (!videoElement || !videoElement.srcObject) {
+            addLog('No video stream available', 'error');
+            alert('Camera is not ready. Please wait a moment and try again.');
+            return;
+          }
+          
+          // Create canvas from video frame
+          const canvas = document.createElement('canvas');
+          canvas.width = videoElement.videoWidth;
+          canvas.height = videoElement.videoHeight;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+          
+          // Convert to data URL
+          const photoDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          
+          addLog('Photo captured from live camera. Processing...', 'info');
+          
+          // Close live camera scanner
+          stopScanner();
+          
+          // Process the captured photo
+          processCapturedCode(photoDataUrl);
+          
+        } catch (error) {
+          addLog('Capture error: ' + error.message, 'error');
+          alert('Error capturing photo: ' + error.message);
+        }
+      }
+      
+      // Process captured photo for barcode/QR detection
+      function processCapturedCode(imageDataUrl) {
+        addLog('Processing captured image...', 'info');
+        showStatus('Decoding code from captured photo...', 'info');
+        
+        const tempScanner = new Html5Qrcode("tempScanner");
+        
+        const tempContainer = document.createElement('div');
+        tempContainer.id = 'tempScanner';
+        tempContainer.style.display = 'none';
+        document.body.appendChild(tempContainer);
+        
+        // Convert data URL to file
+        fetch(imageDataUrl)
+          .then(res => res.blob())
+          .then(blob => {
+            const file = new File([blob], 'captured_photo.jpg', { type: 'image/jpeg' });
+            
+            tempScanner.scanFile(file, true)
+              .then(decodedText => {
+                tempScanner.clear();
+                tempContainer.remove();
+                
+                addLog('Code found in captured photo: ' + decodedText, 'info');
+                playBeepSound();
+                
+                input.value = decodedText;
+                markAsFilled();
+                
+                if (navigator.vibrate) {
+                  navigator.vibrate([100, 50, 100]);
+                }
+              })
+              .catch(err => {
+                console.error('Scan error:', err);
+                tempScanner.clear();
+                tempContainer.remove();
+                
+                addLog('No code found in captured photo', 'error');
+                showStatus('No code found in photo. Please try again.', 'error');
+                setTimeout(function() {
+                  hideStatus();
+                }, 3000);
+              });
+          })
+          .catch(err => {
+            addLog('Error converting photo: ' + err.message, 'error');
+            tempScanner.clear();
+            tempContainer.remove();
+            showStatus('Error processing photo. Please try again.', 'error');
+          });
       }
       
       async function stopScanner() {
