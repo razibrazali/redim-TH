@@ -222,7 +222,7 @@
         background: var(--success-light);
       }
       
-      /* Camera Options Dropdown - Positioned BELOW input */
+      /* Camera Options Dropdown */
       .camera-options {
         display: none;
         position: absolute;
@@ -683,7 +683,7 @@
     <div class="container">
       <div class="header">
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner 10:16</h1>
+        <h1>Parcel Scanner 10:23</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
@@ -1057,10 +1057,19 @@
           addLog('Opening barcode scanner...', 'info');
           cameraOverlay.classList.add('active');
           
+          // Check if Huawei device
+          const isHuawei = navigator.userAgent.includes('Huawei') || 
+                           navigator.userAgent.includes('HUAWEI') ||
+                           navigator.userAgent.includes('HarmonyOS');
+          
+          if (isHuawei) {
+            addLog('Huawei device detected - using compatibility mode', 'warning');
+          }
+          
           html5QrCode = new Html5Qrcode("reader");
           
           const config = {
-            fps: 15,
+            fps: 10,
             qrbox: { width: 250, height: 250 },
             aspectRatio: 1.0,
             formatsToSupport: [
@@ -1076,12 +1085,40 @@
             ]
           };
           
-          await html5QrCode.start(
+          // Try multiple camera configurations
+          let cameraConfigs = [
             { facingMode: "environment" },
-            config,
-            onScanSuccess,
-            onScanFailure
-          );
+            { facingMode: { exact: "environment" } },
+            true
+          ];
+          
+          let started = false;
+          
+          for (const cameraConfig of cameraConfigs) {
+            try {
+              await html5QrCode.start(
+                cameraConfig,
+                config,
+                onScanSuccess,
+                onScanFailure
+              );
+              started = true;
+              addLog('Scanner started with config: ' + JSON.stringify(cameraConfig), 'info');
+              break;
+            } catch (cameraError) {
+              addLog('Failed with config: ' + JSON.stringify(cameraConfig) + ' - ' + cameraError.message, 'warning');
+              try {
+                await html5QrCode.stop();
+                await html5QrCode.clear();
+              } catch (stopError) {
+                // Ignore stop errors
+              }
+            }
+          }
+          
+          if (!started) {
+            throw new Error('Could not start camera with any configuration');
+          }
           
           isScanning = true;
           addLog('Scanner started successfully', 'info');
@@ -1101,6 +1138,11 @@
             errorMessage += 'Camera is already in use by another application.';
           } else {
             errorMessage += error.message;
+          }
+          
+          // Huawei-specific suggestion
+          if (navigator.userAgent.includes('Huawei') || navigator.userAgent.includes('HarmonyOS')) {
+            errorMessage += '\n\nFor Huawei devices: Try using Chrome browser instead of Huawei browser.';
           }
           
           alert(errorMessage);
