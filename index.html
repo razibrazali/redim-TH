@@ -651,7 +651,7 @@
     <div class="container">
       <div class="header">
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner 12:19</h1>
+        <h1>Parcel Scanner 12:28</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
@@ -718,13 +718,13 @@
           </div>
           
           <div class="button-grid">
-            <button class="action-button primary" onclick="openPhotoCamera()">
+            <button class="action-button primary" onclick="openPhotoCamera()" id="takePhotoButton">
               <span class="icon">📸</span>
               Take Photo
             </button>
             <button class="action-button danger" onclick="retakePhoto()" id="retakeButton" style="display: none;">
               <span class="icon">🔄</span>
-              Retake
+              Retake Photo
             </button>
           </div>
           
@@ -800,6 +800,7 @@
       const photoStatus = document.getElementById('photoStatus');
       const retakeButton = document.getElementById('retakeButton');
       const submitButton = document.getElementById('submitButton');
+      const takePhotoButton = document.getElementById('takePhotoButton');
       const logConsole = document.getElementById('logConsole');
       const cameraIconButton = document.getElementById('cameraIconButton');
       const cameraOptions = document.getElementById('cameraOptions');
@@ -956,6 +957,7 @@
         capturedPhoto.src = '';
         retakeButton.style.display = 'none';
         submitButton.style.display = 'none';
+        takePhotoButton.style.display = 'block';
         capturedPhotoData = null;
       }
       
@@ -1298,12 +1300,17 @@
         ctx.fillRect(10, canvas.height - 50, 300, 40);
         ctx.fillStyle = 'black';
         ctx.fillText(timestampStr, 20, canvas.height - 20);
-        const photoDataUrl = canvas.toDataURL('image/png');
+        const photoDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        
         capturedPhoto.src = photoDataUrl;
         capturedPhotoData = photoDataUrl;
         photoPreview.classList.add('active');
+        
+        // Hide Take Photo button, show Retake and Submit
+        takePhotoButton.style.display = 'none';
         retakeButton.style.display = 'block';
         submitButton.style.display = 'block';
+        
         closePhotoCamera();
         step2Number.textContent = '✓';
         step2Number.classList.add('completed');
@@ -1315,16 +1322,20 @@
       }
       
       function retakePhoto() {
-        photoPreview.classList.remove('active');
-        capturedPhoto.src = '';
-        retakeButton.style.display = 'none';
-        submitButton.style.display = 'none';
-        step2Number.textContent = '2';
-        step2Number.classList.remove('completed');
-        step2Number.classList.add('active');
-        progressFill.style.width = '66.66%';
-        capturedPhotoData = null;
-        openPhotoCamera();
+        // Confirmation dialog to prevent accidental clicks
+        if (confirm('Are you sure you want to retake the photo?')) {
+          photoPreview.classList.remove('active');
+          capturedPhoto.src = '';
+          retakeButton.style.display = 'none';
+          submitButton.style.display = 'none';
+          takePhotoButton.style.display = 'block';
+          step2Number.textContent = '2';
+          step2Number.classList.remove('completed');
+          step2Number.classList.add('active');
+          progressFill.style.width = '66.66%';
+          capturedPhotoData = null;
+          openPhotoCamera();
+        }
       }
       
       function closePhotoCamera() {
@@ -1344,40 +1355,64 @@
         submitButton.disabled = true;
         submitButton.textContent = '⏳ Submitting...';
         
-        try {
-          const deviceInfo = getDeviceInfo();
-          
-          const payload = {
-            action: 'submitParcel',
-            trackingNumber: input.value.trim(),
-            photoBase64: capturedPhotoData,
-            deviceInfo: deviceInfo
-          };
-          
-          // Fire and forget - don't wait for response
-          fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(payload)
-          })
-          .then(response => response.text())
-          .then(responseText => {
-            const result = JSON.parse(responseText);
-            addLog('Parcel submitted successfully!', 'info');
-            if (result.logs && result.logs.length > 0) {
-              result.logs.forEach(log => { addLog('[BACKEND] ' + log, 'info'); });
+        const payload = {
+          action: 'submitParcel',
+          trackingNumber: input.value.trim(),
+          photoBase64: capturedPhotoData,
+          deviceInfo: getDeviceInfo()
+        };
+        
+        const payloadString = JSON.stringify(payload);
+        addLog('Payload size: ' + Math.round(payloadString.length / 1024) + ' KB', 'info');
+        
+        let maxRetries = 3;
+        let retryCount = 0;
+        let success = false;
+        
+        while (retryCount < maxRetries && !success) {
+          try {
+            addLog('Attempt ' + (retryCount + 1) + ' of ' + maxRetries + '...', 'info');
+            
+            const response = await fetch(GOOGLE_SCRIPT_URL, {
+              method: 'POST',
+              mode: 'cors',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: payloadString
+            });
+            
+            if (!response.ok) {
+              throw new Error('HTTP ' + response.status);
             }
-          })
-          .catch(error => {
-            addLog('Submit error: ' + (error.message || error), 'error');
-          });
-          
-          // Reset form IMMEDIATELY for next parcel
+            
+            const responseText = await response.text();
+            const result = JSON.parse(responseText);
+            
+            if (result.success) {
+              success = true;
+              addLog('Parcel submitted successfully!', 'info');
+              if (result.logs && result.logs.length > 0) {
+                result.logs.forEach(log => { addLog('[BACKEND] ' + log, 'info'); });
+              }
+            } else {
+              throw new Error(result.message || 'Backend error');
+            }
+            
+          } catch (error) {
+            retryCount++;
+            const errMsg = error && error.message ? error.message : String(error);
+            addLog('Attempt ' + retryCount + ' failed: ' + errMsg, 'error');
+            
+            if (retryCount < maxRetries) {
+              addLog('Retrying in 2 seconds...', 'warning');
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+          }
+        }
+        
+        if (success) {
           addLog('Form ready for next parcel', 'info');
           showStatus('✅ Parcel submitted! Ready for next scan.', 'success');
           
-          // Reset everything
           input.value = '';
           removeFilled();
           capturedPhotoData = null;
@@ -1385,6 +1420,7 @@
           capturedPhoto.src = '';
           retakeButton.style.display = 'none';
           submitButton.style.display = 'none';
+          takePhotoButton.style.display = 'block';
           submitButton.disabled = false;
           submitButton.textContent = '✅ Submit Parcel';
           step2Number.textContent = '2';
@@ -1394,11 +1430,11 @@
           input.focus();
           
           setTimeout(() => { hideStatus(); }, 2000);
-          
-        } catch (error) {
-          alert('Error submitting parcel: ' + (error.message || error));
+        } else {
           submitButton.disabled = false;
           submitButton.textContent = '✅ Submit Parcel';
+          addLog('All retries failed. Please check your connection.', 'error');
+          alert('Failed to submit after ' + maxRetries + ' attempts. Please check your internet connection and try again.');
         }
       }
       
