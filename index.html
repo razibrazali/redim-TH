@@ -746,7 +746,7 @@
       <div class="header">
         <button class="dev-mode-button" onclick="toggleDevMode()" title=""></button>
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner 11:55</h1>
+        <h1>Parcel Scanner 12:04</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
@@ -1631,6 +1631,12 @@
           trackingNumber: input.value.trim(),
           photoBase64: capturedPhotoData
         };
+        
+        // If weight analysis already completed, include it in payload
+        if (weightResultData) {
+          payload.weight = weightResultData;
+          addLog('Including pre-analyzed weight in submission: ' + weightResultData, 'info');
+        }
         
         const payloadString = JSON.stringify(payload);
         addLog('Payload size: ' + Math.round(payloadString.length / 1024) + ' KB', 'info');
