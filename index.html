@@ -114,6 +114,7 @@
         display: flex;
         align-items: center;
         margin-bottom: 20px;
+        flex-wrap: wrap;
       }
       
       .step-number {
@@ -710,9 +711,9 @@
   <body>
     <div class="container">
       <div class="header">
-        <button class="dev-mode-button" onclick="openDevMode()" title=""></button>
+        <button class="dev-mode-button" onclick="toggleDevMode()" title=""></button>
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner 11:44</h1>
+        <h1>Parcel Scanner 11:48</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
@@ -759,8 +760,8 @@
         <div id="statusMessage" class="status-message"></div>
         
         <div class="helper-text" id="helperText">
-          💡 USB scanner: Just scan the code<br>
-          📱 Phone: Tap camera icon to scan
+          💡 USB scanner: Simply scan the barcode<br>
+          📱 Mobile: Tap the camera icon to scan
         </div>
         
         <!-- Step 2 - ALWAYS VISIBLE (Disabled until tracking number scanned) -->
@@ -771,7 +772,7 @@
           </div>
           
           <div class="step-2-locked-message">
-            🔒 Scan tracking number first to unlock this step
+            🔒 Please scan a tracking number first to unlock this step
           </div>
           
           <div class="photo-preview" id="photoPreview">
@@ -792,7 +793,7 @@
           <div id="photoStatus" class="status-message"></div>
           
           <div class="helper-text">
-            📸 Take a live photo of the parcel on the weight scale
+            📸 Capture a live photo of the parcel on the weight scale
           </div>
         </div>
         
@@ -812,7 +813,7 @@
           </div>
           
           <div class="helper-text">
-            🚧 This feature is under development
+            🚧 This feature is currently under development
           </div>
         </div>
         
@@ -832,7 +833,7 @@
           </div>
           
           <div class="helper-text">
-            🚧 This feature is under development
+            🚧 This feature is currently under development
           </div>
         </div>
         
@@ -852,7 +853,7 @@
           </div>
           
           <div class="helper-text">
-            🚧 This feature is under development
+            🚧 This feature is currently under development
           </div>
         </div>
         
@@ -870,12 +871,12 @@
 
     <div class="camera-overlay" id="cameraOverlay">
       <div class="camera-header">
-        📷 Point camera at barcode or QR code
+        📷 Point the camera at the barcode or QR code
       </div>
       <div class="camera-body" id="cameraBody">
         <div id="reader"></div>
         <div class="camera-guide"></div>
-        <div class="focus-hint">👆 Tap screen to focus</div>
+        <div class="focus-hint">👆 Tap the screen to focus</div>
       </div>
       <div class="camera-footer">
         <button class="camera-capture" onclick="captureFromLiveCamera()">
@@ -889,7 +890,7 @@
     
     <div class="camera-overlay" id="photoCameraOverlay">
       <div class="camera-header">
-        📸 Position parcel and scale in frame
+        📸 Position the parcel and scale within the frame
       </div>
       <div class="camera-body">
         <video id="photoVideo" autoplay playsinline muted></video>
@@ -959,15 +960,29 @@
         logConsole.scrollTop = logConsole.scrollHeight;
       }
       
-      function openDevMode() {
-        const password = prompt('Please enter password to enter developer mode:');
-        
-        if (password === DEV_PASSWORD) {
-          isDevMode = true;
-          logConsole.classList.add('active');
-          addLog('Developer mode activated', 'info');
-        } else if (password !== null && password !== '') {
-          alert('Incorrect password.');
+      function toggleDevMode() {
+        if (!isDevMode) {
+          // Try to activate developer mode
+          const password = prompt('Please enter the password to enter Developer Mode:');
+          
+          if (password === DEV_PASSWORD) {
+            isDevMode = true;
+            logConsole.classList.add('active');
+            addLog('Developer Mode activated', 'info');
+          } else if (password !== null && password !== '') {
+            alert('Incorrect password.');
+          }
+        } else {
+          // Try to deactivate developer mode
+          const password = prompt('Please enter the password to exit Developer Mode:');
+          
+          if (password === DEV_PASSWORD) {
+            isDevMode = false;
+            logConsole.classList.remove('active');
+            logConsole.innerHTML = '';
+          } else if (password !== null && password !== '') {
+            alert('Incorrect password.');
+          }
         }
       }
       
@@ -989,7 +1004,7 @@
           oscillator.start();
           setTimeout(function() { oscillator.stop(); }, 100);
         } catch (e) {
-          addLog('Audio not available: ' + e.message, 'error');
+          addLog('Audio unavailable: ' + e.message, 'error');
         }
       }
       
@@ -1164,7 +1179,7 @@
           const cameras = await Html5Qrcode.getCameras();
           
           if (!cameras || cameras.length === 0) {
-            throw new Error('No cameras found. Please ensure page is served over HTTPS.');
+            throw new Error('No cameras found. Please ensure the page is served over HTTPS.');
           }
           
           addLog('Found ' + cameras.length + ' camera(s):', 'info');
@@ -1196,11 +1211,11 @@
           addLog('Scanner error: ' + errMsg, 'error');
           cameraOverlay.classList.remove('active');
           
-          let errorMessage = 'Unable to access camera. ';
+          let errorMessage = 'Unable to access the camera. ';
           if (errMsg.includes('permission') || errMsg.includes('NotAllowed')) {
-            errorMessage += 'Camera permission denied.';
+            errorMessage += 'Camera permission was denied.';
           } else if (errMsg.includes('NotFound') || errMsg.includes('No cameras')) {
-            errorMessage += 'No camera found.';
+            errorMessage += 'No camera was found.';
           } else {
             errorMessage += errMsg;
           }
@@ -1231,7 +1246,7 @@
           
           if (!videoElement || !videoElement.videoWidth) {
             addLog('No video stream available', 'error');
-            alert('Camera is not ready. Please wait a moment.');
+            alert('The camera is not ready. Please wait a moment.');
             return;
           }
           
@@ -1256,8 +1271,8 @@
       }
       
       function processCapturedCode(imageDataUrl) {
-        addLog('Processing captured image with html5-qrcode...', 'info');
-        showStatus('Decoding code from captured photo...', 'info');
+        addLog('Processing captured image...', 'info');
+        showStatus('Decoding barcode from captured photo...', 'info');
         
         fetch(imageDataUrl)
           .then(res => res.blob())
@@ -1276,7 +1291,7 @@
                 tempScanner.clear();
                 tempContainer.remove();
                 
-                addLog('Code found in captured photo: ' + decodedText, 'info');
+                addLog('Barcode found in captured photo: ' + decodedText, 'info');
                 playBeepSound();
                 
                 input.value = decodedText;
@@ -1293,8 +1308,8 @@
                 tempScanner.clear();
                 tempContainer.remove();
                 
-                addLog('No code found in photo', 'error');
-                showStatus('No code found in photo. Please try again.', 'error');
+                addLog('No barcode found in photo', 'error');
+                showStatus('No barcode found in the photo. Please try again.', 'error');
                 setTimeout(function() {
                   hideStatus();
                 }, 3000);
@@ -1303,7 +1318,7 @@
           .catch(err => {
             const errMsg = err && err.message ? err.message : String(err);
             addLog('Error converting photo: ' + errMsg, 'error');
-            showStatus('Error processing photo. Please try again.', 'error');
+            showStatus('Error processing the photo. Please try again.', 'error');
             setTimeout(function() {
               hideStatus();
             }, 3000);
@@ -1361,7 +1376,7 @@
           const file = e.target.files[0];
           if (file) {
             addLog('File selected: ' + file.name, 'info');
-            showStatus('Decoding code...', 'info');
+            showStatus('Decoding barcode...', 'info');
             
             const tempContainer = document.createElement('div');
             tempContainer.id = 'tempScanner';
@@ -1375,7 +1390,7 @@
                 tempScanner.clear();
                 tempContainer.remove();
                 
-                addLog('Code found: ' + decodedText, 'info');
+                addLog('Barcode found: ' + decodedText, 'info');
                 playBeepSound();
                 
                 input.value = decodedText;
@@ -1392,8 +1407,8 @@
                 tempScanner.clear();
                 tempContainer.remove();
                 
-                addLog('No code found in image', 'error');
-                showStatus('No code found in image. Please try again.', 'error');
+                addLog('No barcode found in image', 'error');
+                showStatus('No barcode found in the image. Please try again.', 'error');
                 setTimeout(function() {
                   hideStatus();
                 }, 3000);
@@ -1420,7 +1435,7 @@
           await photoVideo.play();
         } catch (error) {
           photoCameraOverlay.classList.remove('active');
-          alert('Unable to access camera: ' + (error.message || error));
+          alert('Unable to access the camera: ' + (error.message || error));
         }
       }
       
@@ -1459,7 +1474,7 @@
         showDisabledSteps();
         showSubmitSection();
         
-        showPhotoStatus('✅ Photo captured!', 'success');
+        showPhotoStatus('✅ Photo captured successfully!', 'success');
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
         setTimeout(() => { hidePhotoStatus(); }, 3000);
       }
@@ -1559,7 +1574,7 @@
         
         // Show processing for 2 seconds, then reset form
         setTimeout(() => {
-          showStatus('✅ Request submitted! Ready for next scan.', 'success');
+          showStatus('✅ Request submitted! Ready for the next scan.', 'success');
           resetForm();
           setTimeout(() => { hideStatus(); }, 2000);
         }, 2000);
