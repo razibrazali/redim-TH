@@ -139,10 +139,20 @@
         background: var(--success);
       }
       
+      .step-number.disabled-step {
+        background: var(--gray-400);
+        opacity: 0.6;
+      }
+      
       .step-text {
         font-weight: 600;
         color: var(--gray-800);
         font-size: 16px;
+      }
+      
+      .step-text.disabled-text {
+        color: var(--gray-500);
+        text-decoration: line-through;
       }
       
       .form-group {
@@ -640,6 +650,37 @@
         font-size: 20px;
       }
       
+      /* Disabled steps styling */
+      .disabled-step-container {
+        display: block;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 2px solid var(--gray-200);
+        opacity: 0.5;
+        pointer-events: none;
+        position: relative;
+      }
+      
+      .disabled-step-container .under-development-badge {
+        display: inline-block;
+        background: var(--warning);
+        color: white;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 12px;
+        margin-left: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      .disabled-step-container .disabled-button {
+        background: var(--gray-300);
+        color: var(--gray-500);
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
+      
       @media (max-width: 480px) {
         .content {
           padding: 20px;
@@ -651,7 +692,7 @@
     <div class="container">
       <div class="header">
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner 11:24</h1>
+        <h1>Parcel Scanner 11:31</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
@@ -728,16 +769,79 @@
             </button>
           </div>
           
-          <button class="action-button success button-full" onclick="submitParcel()" id="submitButton" style="display: none;">
-            <span class="icon">✅</span>
-            Submit Parcel
-          </button>
-          
           <div id="photoStatus" class="status-message"></div>
           
           <div class="helper-text">
             📸 Take a live photo of the parcel on the weight scale
           </div>
+        </div>
+        
+        <!-- Step 3 - Weight Photo (UNDER DEVELOPMENT) -->
+        <div class="disabled-step-container" id="step3Container" style="display: none;">
+          <div class="step-indicator">
+            <div class="step-number disabled-step">✕</div>
+            <div class="step-text disabled-text">Capture Weight Photo</div>
+            <span class="under-development-badge">🚧 Under Development</span>
+          </div>
+          
+          <div class="button-grid">
+            <button class="action-button disabled-button" disabled>
+              <span class="icon">📸</span>
+              Take Weight Photo
+            </button>
+          </div>
+          
+          <div class="helper-text">
+            🚧 This feature is under development
+          </div>
+        </div>
+        
+        <!-- Step 4 - Length Photo (UNDER DEVELOPMENT) -->
+        <div class="disabled-step-container" id="step4Container" style="display: none;">
+          <div class="step-indicator">
+            <div class="step-number disabled-step">✕</div>
+            <div class="step-text disabled-text">Capture Length Photo</div>
+            <span class="under-development-badge">🚧 Under Development</span>
+          </div>
+          
+          <div class="button-grid">
+            <button class="action-button disabled-button" disabled>
+              <span class="icon">📸</span>
+              Take Length Photo
+            </button>
+          </div>
+          
+          <div class="helper-text">
+            🚧 This feature is under development
+          </div>
+        </div>
+        
+        <!-- Step 5 - Height Photo (UNDER DEVELOPMENT) -->
+        <div class="disabled-step-container" id="step5Container" style="display: none;">
+          <div class="step-indicator">
+            <div class="step-number disabled-step">✕</div>
+            <div class="step-text disabled-text">Capture Height Photo</div>
+            <span class="under-development-badge">🚧 Under Development</span>
+          </div>
+          
+          <div class="button-grid">
+            <button class="action-button disabled-button" disabled>
+              <span class="icon">📸</span>
+              Take Height Photo
+            </button>
+          </div>
+          
+          <div class="helper-text">
+            🚧 This feature is under development
+          </div>
+        </div>
+        
+        <!-- Submit Button (moved to end) -->
+        <div id="submitSection" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 2px solid var(--gray-200);">
+          <button class="action-button success button-full" onclick="submitParcel()" id="submitButton">
+            <span class="icon">✅</span>
+            Submit Parcel
+          </button>
         </div>
         
         <div class="log-console" id="logConsole"></div>
@@ -805,6 +909,10 @@
       const cameraIconButton = document.getElementById('cameraIconButton');
       const cameraOptions = document.getElementById('cameraOptions');
       const clearButtonInline = document.getElementById('clearButtonInline');
+      const step3Container = document.getElementById('step3Container');
+      const step4Container = document.getElementById('step4Container');
+      const step5Container = document.getElementById('step5Container');
+      const submitSection = document.getElementById('submitSection');
       
       let html5QrCode = null;
       let isScanning = false;
@@ -911,11 +1019,28 @@
       
       function activateStep2() {
         step2Container.classList.add('active');
-        progressFill.style.width = '66.66%';
+        progressFill.style.width = '50%';
         step1Number.textContent = '✓';
         step1Number.classList.add('completed');
         step1Number.classList.remove('active');
         step2Number.classList.add('active');
+      }
+      
+      function showDisabledSteps() {
+        step3Container.style.display = 'block';
+        step4Container.style.display = 'block';
+        step5Container.style.display = 'block';
+      }
+      
+      function showSubmitSection() {
+        submitSection.style.display = 'block';
+      }
+      
+      function hideDisabledSteps() {
+        step3Container.style.display = 'none';
+        step4Container.style.display = 'none';
+        step5Container.style.display = 'none';
+        submitSection.style.display = 'none';
       }
       
       function deactivateStep2() {
@@ -925,6 +1050,7 @@
         step1Number.classList.remove('completed');
         step1Number.classList.add('active');
         step2Number.classList.remove('active');
+        step2Number.textContent = '2';
         
         photoPreview.classList.remove('active');
         capturedPhoto.src = '';
@@ -932,6 +1058,8 @@
         submitButton.style.display = 'none';
         takePhotoButton.style.display = 'block';
         capturedPhotoData = null;
+        
+        hideDisabledSteps();
       }
       
       function clearTrackingNumber() {
@@ -1279,17 +1407,21 @@
         capturedPhotoData = photoDataUrl;
         photoPreview.classList.add('active');
         
-        // Hide Take Photo button, show Retake and Submit
+        // Hide Take Photo button, show Retake
         takePhotoButton.style.display = 'none';
         retakeButton.style.display = 'block';
-        submitButton.style.display = 'block';
         
         closePhotoCamera();
         step2Number.textContent = '✓';
         step2Number.classList.add('completed');
         step2Number.classList.remove('active');
-        progressFill.style.width = '100%';
-        showPhotoStatus('✅ Photo captured! Click Submit to process.', 'success');
+        progressFill.style.width = '75%';
+        
+        // Show disabled steps and submit section
+        showDisabledSteps();
+        showSubmitSection();
+        
+        showPhotoStatus('✅ Photo captured!', 'success');
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
         setTimeout(() => { hidePhotoStatus(); }, 3000);
       }
@@ -1305,8 +1437,9 @@
           step2Number.textContent = '2';
           step2Number.classList.remove('completed');
           step2Number.classList.add('active');
-          progressFill.style.width = '66.66%';
+          progressFill.style.width = '50%';
           capturedPhotoData = null;
+          hideDisabledSteps();
           openPhotoCamera();
         }
       }
@@ -1326,13 +1459,13 @@
         photoPreview.classList.remove('active');
         capturedPhoto.src = '';
         retakeButton.style.display = 'none';
-        submitButton.style.display = 'none';
         takePhotoButton.style.display = 'block';
         submitButton.disabled = false;
         submitButton.textContent = '✅ Submit Parcel';
         step2Number.textContent = '2';
         step2Number.classList.remove('completed');
         progressFill.style.width = '33.33%';
+        hideDisabledSteps();
         deactivateStep2();
         input.focus();
       }
