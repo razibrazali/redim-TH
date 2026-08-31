@@ -681,6 +681,25 @@
         opacity: 0.7;
       }
       
+      /* Subtle developer mode button */
+      .dev-mode-button {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 12px;
+        height: 12px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        opacity: 0.3;
+        z-index: 100;
+        padding: 0;
+      }
+      
+      .dev-mode-button:hover {
+        opacity: 0.6;
+      }
+      
       @media (max-width: 480px) {
         .content {
           padding: 20px;
@@ -691,8 +710,9 @@
   <body>
     <div class="container">
       <div class="header">
+        <button class="dev-mode-button" onclick="openDevMode()" title=""></button>
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner 11:31</h1>
+        <h1>Parcel Scanner 11:39</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
@@ -776,18 +796,18 @@
           </div>
         </div>
         
-        <!-- Step 3 - Weight Photo (UNDER DEVELOPMENT) -->
+        <!-- Step 3 - Width Photo (UNDER DEVELOPMENT) -->
         <div class="disabled-step-container" id="step3Container" style="display: none;">
           <div class="step-indicator">
             <div class="step-number disabled-step">✕</div>
-            <div class="step-text disabled-text">Capture Weight Photo</div>
+            <div class="step-text disabled-text">Capture Width Photo</div>
             <span class="under-development-badge">🚧 Under Development</span>
           </div>
           
           <div class="button-grid">
             <button class="action-button disabled-button" disabled>
               <span class="icon">📸</span>
-              Take Weight Photo
+              Take Width Photo
             </button>
           </div>
           
@@ -922,6 +942,8 @@
       let capturedPhotoData = null;
       
       let audioContext = null;
+      let isDevMode = false;
+      const DEV_PASSWORD = '1234!';
       
       function addLog(message, type = 'info') {
         console.log(message);
@@ -931,6 +953,18 @@
         logEntry.textContent = new Date().toLocaleTimeString() + ' - ' + message;
         logConsole.appendChild(logEntry);
         logConsole.scrollTop = logConsole.scrollHeight;
+      }
+      
+      function openDevMode() {
+        const password = prompt('Please enter password to enter developer mode:');
+        
+        if (password === DEV_PASSWORD) {
+          isDevMode = true;
+          logConsole.classList.add('active');
+          addLog('Developer mode activated', 'info');
+        } else if (password !== null && password !== '') {
+          alert('Incorrect password.');
+        }
       }
       
       function playBeepSound() {
