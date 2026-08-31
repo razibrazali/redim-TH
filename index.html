@@ -651,7 +651,7 @@
     <div class="container">
       <div class="header">
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner 11:13</h1>
+        <h1>Parcel Scanner 11:24</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
@@ -1319,14 +1319,32 @@
         photoCameraOverlay.classList.remove('active');
       }
       
-      async function submitParcel() {
+      function resetForm() {
+        input.value = '';
+        removeFilled();
+        capturedPhotoData = null;
+        photoPreview.classList.remove('active');
+        capturedPhoto.src = '';
+        retakeButton.style.display = 'none';
+        submitButton.style.display = 'none';
+        takePhotoButton.style.display = 'block';
+        submitButton.disabled = false;
+        submitButton.textContent = '✅ Submit Parcel';
+        step2Number.textContent = '2';
+        step2Number.classList.remove('completed');
+        progressFill.style.width = '33.33%';
+        deactivateStep2();
+        input.focus();
+      }
+      
+      function submitParcel() {
         if (!input.value.trim() || !capturedPhotoData) {
           alert('Please complete all steps before submitting.');
           return;
         }
         
         submitButton.disabled = true;
-        submitButton.textContent = '⏳ Submitting...';
+        submitButton.textContent = '⏳ Processing...';
         
         const payload = {
           action: 'submitParcel',
@@ -1337,77 +1355,43 @@
         const payloadString = JSON.stringify(payload);
         addLog('Payload size: ' + Math.round(payloadString.length / 1024) + ' KB', 'info');
         
-        let maxRetries = 3;
-        let retryCount = 0;
-        let success = false;
-        
-        while (retryCount < maxRetries && !success) {
-          try {
-            addLog('Attempt ' + (retryCount + 1) + ' of ' + maxRetries + '...', 'info');
-            
-            const response = await fetch(GOOGLE_SCRIPT_URL, {
-              method: 'POST',
-              mode: 'cors',
-              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-              body: payloadString
-            });
-            
-            if (!response.ok) {
-              throw new Error('HTTP ' + response.status);
-            }
-            
-            const responseText = await response.text();
-            const result = JSON.parse(responseText);
-            
-            if (result.success) {
-              success = true;
-              addLog('Parcel submitted successfully!', 'info');
-              if (result.logs && result.logs.length > 0) {
-                result.logs.forEach(log => { addLog('[BACKEND] ' + log, 'info'); });
-              }
-            } else {
-              throw new Error(result.message || 'Backend error');
-            }
-            
-          } catch (error) {
-            retryCount++;
-            const errMsg = error && error.message ? error.message : String(error);
-            addLog('Attempt ' + retryCount + ' failed: ' + errMsg, 'error');
-            
-            if (retryCount < maxRetries) {
-              addLog('Retrying in 2 seconds...', 'warning');
-              await new Promise(resolve => setTimeout(resolve, 2000));
-            }
+        // Send request in background
+        fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: payloadString
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
           }
-        }
+          return response.text();
+        })
+        .then(responseText => {
+          const result = JSON.parse(responseText);
+          
+          if (result.success) {
+            addLog('Parcel submitted successfully!', 'info');
+            if (result.logs && result.logs.length > 0) {
+              result.logs.forEach(log => { addLog('[BACKEND] ' + log, 'info'); });
+            }
+          } else {
+            throw new Error(result.message || 'Backend error');
+          }
+        })
+        .catch(error => {
+          const errMsg = error && error.message ? error.message : String(error);
+          addLog('Submission failed: ' + errMsg, 'error');
+          alert('Submission failed: ' + errMsg);
+        });
         
-        if (success) {
-          addLog('Form ready for next parcel', 'info');
-          showStatus('✅ Parcel submitted! Ready for next scan.', 'success');
-          
-          input.value = '';
-          removeFilled();
-          capturedPhotoData = null;
-          photoPreview.classList.remove('active');
-          capturedPhoto.src = '';
-          retakeButton.style.display = 'none';
-          submitButton.style.display = 'none';
-          takePhotoButton.style.display = 'block';
-          submitButton.disabled = false;
-          submitButton.textContent = '✅ Submit Parcel';
-          step2Number.textContent = '2';
-          step2Number.classList.remove('completed');
-          progressFill.style.width = '33.33%';
-          deactivateStep2();
-          input.focus();
-          
+        // Show processing for 2 seconds, then reset form
+        setTimeout(() => {
+          showStatus('✅ Request submitted! Ready for next scan.', 'success');
+          resetForm();
           setTimeout(() => { hideStatus(); }, 2000);
-        } else {
-          submitButton.disabled = false;
-          submitButton.textContent = '✅ Submit Parcel';
-          addLog('All retries failed. Please check your connection.', 'error');
-          alert('Failed to submit after ' + maxRetries + ' attempts. Please check your internet connection and try again.');
-        }
+        }, 2000);
       }
       
       document.querySelector('.container').addEventListener('click', function(e) {
