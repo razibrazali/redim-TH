@@ -651,7 +651,7 @@
     <div class="container">
       <div class="header">
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner 12:38</h1>
+        <h1>Parcel Scanner 11:13</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
@@ -845,33 +845,6 @@
         } catch (e) {
           addLog('Audio not available: ' + e.message, 'error');
         }
-      }
-      
-      function getDeviceInfo() {
-        const userAgent = navigator.userAgent;
-        
-        let deviceType = 'Desktop';
-        if (/Android/i.test(userAgent)) deviceType = 'Android';
-        else if (/iPhone|iPad|iPod/i.test(userAgent)) deviceType = 'iOS';
-        else if (/Huawei|HUAWEI|HarmonyOS/i.test(userAgent)) deviceType = 'Huawei';
-        else if (/Windows/i.test(userAgent)) deviceType = 'Windows';
-        else if (/Mac/i.test(userAgent)) deviceType = 'Mac';
-        
-        let browser = 'Unknown';
-        if (/Chrome/i.test(userAgent) && !/Edg/i.test(userAgent)) browser = 'Chrome';
-        else if (/Safari/i.test(userAgent) && !/Chrome/i.test(userAgent)) browser = 'Safari';
-        else if (/Firefox/i.test(userAgent)) browser = 'Firefox';
-        else if (/Edg/i.test(userAgent)) browser = 'Edge';
-        else if (/SamsungBrowser/i.test(userAgent)) browser = 'Samsung Browser';
-        
-        return {
-          userAgent: userAgent,
-          deviceType: deviceType,
-          browser: browser,
-          screenSize: screen.width + 'x' + screen.height,
-          language: navigator.language || 'Unknown',
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown'
-        };
       }
       
       function toggleCameraOptions(event) {
@@ -1358,8 +1331,7 @@
         const payload = {
           action: 'submitParcel',
           trackingNumber: input.value.trim(),
-          photoBase64: capturedPhotoData,
-          deviceInfo: getDeviceInfo()
+          photoBase64: capturedPhotoData
         };
         
         const payloadString = JSON.stringify(payload);
