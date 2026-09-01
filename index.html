@@ -746,7 +746,7 @@
       <div class="header">
         <button class="dev-mode-button" onclick="toggleDevMode()" title=""></button>
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner</h1>
+        <h1>Parcel Scanner 12:10PM</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
@@ -1107,14 +1107,21 @@
         deactivateStep2();
       }
       
-      function activateStep2() {
-        step2Container.classList.add('active');
-        progressFill.style.width = '50%';
-        step1Number.textContent = '✓';
-        step1Number.classList.add('completed');
-        step1Number.classList.remove('active');
-        step2Number.classList.add('active');
-      }
+function activateStep2() {
+    step2Container.classList.add('active');
+    progressFill.style.width = '50%';
+    step1Number.textContent = '✓';
+    step1Number.classList.add('completed');
+    step1Number.classList.remove('active');
+    
+    // Ensure step 2 number is properly reset
+    step2Number.textContent = '2';
+    step2Number.classList.remove('completed');
+    step2Number.classList.add('active');
+    
+    // Hide any leftover disabled steps from previous submission
+    hideDisabledSteps();
+}
       
       function showDisabledSteps() {
         step3Container.style.display = 'block';
@@ -1596,26 +1603,42 @@
         photoCameraOverlay.classList.remove('active');
       }
       
-      function resetForm() {
-        input.value = '';
-        removeFilled();
-        capturedPhotoData = null;
-        weightResultData = null;
-        photoPreview.classList.remove('active');
-        capturedPhoto.src = '';
-        retakeButton.style.display = 'none';
-        takePhotoButton.style.display = 'block';
-        submitButton.disabled = false;
-        submitButton.textContent = '✅ Submit Parcel';
-        step2Number.textContent = '2';
-        step2Number.classList.remove('completed');
-        progressFill.style.width = '33.33%';
-        weightResult.classList.remove('active', 'loading', 'success', 'error');
-        weightResult.textContent = '';
-        hideDisabledSteps();
-        deactivateStep2();
-        input.focus();
-      }
+function resetForm() {
+    input.value = '';
+    removeFilled();
+    capturedPhotoData = null;
+    weightResultData = null;
+    photoPreview.classList.remove('active');
+    capturedPhoto.src = '';
+    retakeButton.style.display = 'none';
+    takePhotoButton.style.display = 'block';
+    submitButton.disabled = false;
+    submitButton.textContent = '✅ Submit Parcel';
+    
+    // Reset step 2 completely
+    step2Container.classList.remove('active');
+    step2Number.textContent = '2';
+    step2Number.classList.remove('completed');
+    step2Number.classList.remove('active');
+    
+    // Reset progress
+    progressFill.style.width = '33.33%';
+    
+    // Reset step 1
+    step1Number.textContent = '1';
+    step1Number.classList.remove('completed');
+    step1Number.classList.add('active');
+    
+    // Clear weight result
+    weightResult.classList.remove('active', 'loading', 'success', 'error');
+    weightResult.textContent = '';
+    
+    // Hide all disabled steps and submit section
+    hideDisabledSteps();
+    
+    // Focus on input
+    input.focus();
+}
       
       function submitParcel() {
         if (!input.value.trim() || !capturedPhotoData) {
