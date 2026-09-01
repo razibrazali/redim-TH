@@ -1487,53 +1487,62 @@
         }
       }
       
-      function capturePhoto() {
-        if (!photoStream) return;
-        const canvas = document.createElement('canvas');
-        const video = photoVideo;
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const timestamp = new Date();
-        const timestampStr = timestamp.toLocaleString();
-        ctx.font = 'bold 30px Arial';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.fillRect(10, canvas.height - 50, 300, 40);
-        ctx.fillStyle = 'black';
-        ctx.fillText(timestampStr, 20, canvas.height - 20);
-        const photoDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-        
-        capturedPhoto.src = photoDataUrl;
-        capturedPhotoData = photoDataUrl;
-        photoPreview.classList.add('active');
-        
-        // Hide Take Photo button, show Retake
-        takePhotoButton.style.display = 'none';
-        retakeButton.style.display = 'block';
-        
-        closePhotoCamera();
-        step2Number.textContent = '✓';
-        step2Number.classList.add('completed');
-        step2Number.classList.remove('active');
-        progressFill.style.width = '75%';
-        
-        // Show disabled steps and submit section
-        showDisabledSteps();
-        showSubmitSection();
-        
-        // Reset weight analysis state
-        isWeightAnalysisComplete = false;
-        submitButton.disabled = true;
-        submitButtonText.textContent = 'Analyzing weight...';
-        
-        showPhotoStatus('✅ Photo captured successfully!', 'success');
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-        setTimeout(() => { hidePhotoStatus(); }, 3000);
-        
-        // Trigger DeepSeek API immediately after photo capture
-        triggerWeightAnalysis(photoDataUrl);
-      }
+function capturePhoto() {
+  if (!photoStream) return;
+  const canvas = document.createElement('canvas');
+  const video = photoVideo;
+  
+  // Compress image: resize to max 800px width
+  const maxWidth = 800;
+  const scaleFactor = maxWidth / video.videoWidth;
+  canvas.width = maxWidth;
+  canvas.height = video.videoHeight * scaleFactor;
+  
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+  // Add timestamp
+  const timestamp = new Date();
+  const timestampStr = timestamp.toLocaleString();
+  ctx.font = 'bold 24px Arial';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+  ctx.fillRect(10, canvas.height - 40, 250, 30);
+  ctx.fillStyle = 'black';
+  ctx.fillText(timestampStr, 20, canvas.height - 18);
+  
+  // Use lower quality JPEG (0.5 instead of 0.7) for faster processing
+  const photoDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+  
+  capturedPhoto.src = photoDataUrl;
+  capturedPhotoData = photoDataUrl;
+  photoPreview.classList.add('active');
+  
+  // Hide Take Photo button, show Retake
+  takePhotoButton.style.display = 'none';
+  retakeButton.style.display = 'block';
+  
+  closePhotoCamera();
+  step2Number.textContent = '✓';
+  step2Number.classList.add('completed');
+  step2Number.classList.remove('active');
+  progressFill.style.width = '75%';
+  
+  // Show disabled steps and submit section
+  showDisabledSteps();
+  showSubmitSection();
+  
+  // Reset weight analysis state
+  isWeightAnalysisComplete = false;
+  submitButton.disabled = true;
+  submitButtonText.textContent = 'Analyzing weight...';
+  
+  showPhotoStatus('✅ Photo captured successfully!', 'success');
+  if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+  setTimeout(() => { hidePhotoStatus(); }, 3000);
+  
+  // Trigger DeepSeek API immediately after photo capture
+  triggerWeightAnalysis(photoDataUrl);
+}
       
       function triggerWeightAnalysis(photoDataUrl) {
         addLog('Triggering weight analysis...', 'info');
