@@ -734,6 +734,13 @@
         opacity: 0.6;
       }
       
+      /* Disabled submit button style */
+      .action-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+      
       @media (max-width: 480px) {
         .content {
           padding: 20px;
@@ -746,7 +753,7 @@
       <div class="header">
         <button class="dev-mode-button" onclick="toggleDevMode()" title=""></button>
         <div class="header-icon">📦</div>
-        <h1>Parcel Scanner 1:43PM</h1>
+        <h1>Parcel Scanner 1:56PM</h1>
         <p>Scan and track your parcels</p>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
@@ -894,9 +901,9 @@
         
         <!-- Submit Button (moved to end) -->
         <div id="submitSection" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 2px solid var(--gray-200);">
-          <button class="action-button success button-full" onclick="submitParcel()" id="submitButton">
+          <button class="action-button success button-full" onclick="submitParcel()" id="submitButton" disabled>
             <span class="icon">✅</span>
-            Submit Parcel
+            <span id="submitButtonText">Waiting for weight analysis...</span>
           </button>
         </div>
         
@@ -960,6 +967,7 @@
       const photoStatus = document.getElementById('photoStatus');
       const retakeButton = document.getElementById('retakeButton');
       const submitButton = document.getElementById('submitButton');
+      const submitButtonText = document.getElementById('submitButtonText');
       const takePhotoButton = document.getElementById('takePhotoButton');
       const logConsole = document.getElementById('logConsole');
       const cameraIconButton = document.getElementById('cameraIconButton');
@@ -978,6 +986,7 @@
       let photoStream = null;
       let capturedPhotoData = null;
       let weightResultData = null;
+      let isWeightAnalysisComplete = false;
       
       let audioContext = null;
       let isDevMode = false;
@@ -1145,6 +1154,9 @@
         takePhotoButton.style.display = 'block';
         capturedPhotoData = null;
         weightResultData = null;
+        isWeightAnalysisComplete = false;
+        submitButton.disabled = true;
+        submitButtonText.textContent = 'Waiting for weight analysis...';
         weightResult.classList.remove('active', 'loading', 'success', 'error');
         weightResult.textContent = '';
         
@@ -1510,6 +1522,11 @@
         showDisabledSteps();
         showSubmitSection();
         
+        // Reset weight analysis state
+        isWeightAnalysisComplete = false;
+        submitButton.disabled = true;
+        submitButtonText.textContent = 'Analyzing weight...';
+        
         showPhotoStatus('✅ Photo captured successfully!', 'success');
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
         setTimeout(() => { hidePhotoStatus(); }, 3000);
@@ -1551,6 +1568,11 @@
             weightResult.className = 'weight-result success active';
             weightResult.textContent = '⚖️ Weight: ' + result.weight;
             addLog('Weight analysis complete: ' + result.weight, 'info');
+            
+            // Enable submit button
+            isWeightAnalysisComplete = true;
+            submitButton.disabled = false;
+            submitButtonText.textContent = 'Submit Parcel';
           } else {
             throw new Error(result.message || 'Failed to analyze weight');
           }
@@ -1560,6 +1582,11 @@
           addLog('Weight analysis failed: ' + errMsg, 'error');
           weightResult.className = 'weight-result error active';
           weightResult.textContent = '❌ Weight analysis failed';
+          
+          // Keep submit button disabled
+          isWeightAnalysisComplete = false;
+          submitButton.disabled = true;
+          submitButtonText.textContent = 'Weight analysis failed - Retake photo';
         });
       }
       
@@ -1575,6 +1602,9 @@
           progressFill.style.width = '50%';
           capturedPhotoData = null;
           weightResultData = null;
+          isWeightAnalysisComplete = false;
+          submitButton.disabled = true;
+          submitButtonText.textContent = 'Waiting for weight analysis...';
           weightResult.classList.remove('active', 'loading', 'success', 'error');
           weightResult.textContent = '';
           hideDisabledSteps();
@@ -1595,12 +1625,13 @@
         removeFilled();
         capturedPhotoData = null;
         weightResultData = null;
+        isWeightAnalysisComplete = false;
         photoPreview.classList.remove('active');
         capturedPhoto.src = '';
         retakeButton.style.display = 'none';
         takePhotoButton.style.display = 'block';
-        submitButton.disabled = false;
-        submitButton.textContent = '✅ Submit Parcel';
+        submitButton.disabled = true;
+        submitButtonText.textContent = 'Waiting for weight analysis...';
         step2Number.textContent = '2';
         step2Number.classList.remove('completed');
         progressFill.style.width = '33.33%';
@@ -1617,20 +1648,20 @@
           return;
         }
         
+        if (!isWeightAnalysisComplete || !weightResultData) {
+          alert('Please wait for weight analysis to complete before submitting.');
+          return;
+        }
+        
         submitButton.disabled = true;
-        submitButton.textContent = '⏳ Processing...';
+        submitButtonText.textContent = '⏳ Processing...';
         
         const payload = {
           action: 'submitParcel',
           trackingNumber: input.value.trim(),
-          photoBase64: capturedPhotoData
+          photoBase64: capturedPhotoData,
+          weight: weightResultData
         };
-        
-        // If weight analysis already completed, include it in payload
-        if (weightResultData) {
-          payload.weight = weightResultData;
-          addLog('Including pre-analyzed weight in submission: ' + weightResultData, 'info');
-        }
         
         const payloadString = JSON.stringify(payload);
         addLog('Payload size: ' + Math.round(payloadString.length / 1024) + ' KB', 'info');
@@ -1664,6 +1695,8 @@
           const errMsg = error && error.message ? error.message : String(error);
           addLog('Submission failed: ' + errMsg, 'error');
           alert('Submission failed: ' + errMsg);
+          submitButton.disabled = false;
+          submitButtonText.textContent = 'Submit Parcel';
         });
         
         // Show processing for 2 seconds, then reset form
